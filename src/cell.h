@@ -14,10 +14,28 @@ public:
 	void draw();
 	bool circleIntersect(ofVec2f center, float r);
 
-	static void addFile(string filename) {
-		ofxSVG svg;
-		svg.load(filename);
-		horns.push_back(svg);
+	enum imageType {
+		HORN,
+		TOROPOX
+	};
+
+	static void addFile(string filename , imageType type ) {
+
+		switch (type) {
+		case HORN: {ofxSVG svg;
+			svg.load(filename);
+			horns.push_back(svg);
+			break;
+			}
+		case TOROPOX: {
+			ofImage img; 
+			img.load(filename);
+			img.setAnchorPercent(0.5, 0.5); // allow us to draw from center
+			toropox.push_back(img);
+			break;
+		}
+
+		}
 	}
 
 	float growth;
@@ -53,16 +71,19 @@ public:
 	ofVec2f force;
 
 
-	//shared_ptr<GuiApp> gui;
 
 protected:
 	static vector<ofxSVG> horns;
 	ofxSVG* hornLeft;
 	ofxSVG* hornRight;
-
+	static vector <ofImage> toropox; 
+	ofImage* toropoxFrame; 
 
 private:
 	float phase;
-	 
+	int frameRate = 24; 
+	float offset; 
+	int frameNum = 0; 
+	int offsetFrame = 0; 
 };
 

@@ -8,7 +8,7 @@ public:
 	~miniFig();
 	void setup(ofVec2f loc, int index);
 	void update();
-	void getInfected(ofVec2f point,int&);
+	void getInfected(ofVec2f point,int&, bool isVaccine);
 	void draw();
 
 	static float countrySeverityRate;
@@ -19,12 +19,11 @@ public:
 		START,
 		HAPPY,
 		SICK,
-		DEAD
+		DEAD,
+		VACCINE_WAVE,
+		VACCINE_WALK,
 	};
 	void changeState(STATE s);
-
-
-	
 
 	static void loadImage(string filename, STATE imgType,bool flipped) {
 		ofImage img;
@@ -45,18 +44,38 @@ public:
 		case DEAD:
 			deathImg = img;
 			break;
+		case VACCINE_WALK:
+			if (!flipped) vaccine_walking.push_back(img);
+			else vaccine_walkingF.push_back(img);
+			break;
+		case VACCINE_WAVE:
+			 vaccine_waving.push_back(img);
+			break;
 		}
+	}
+
+	static void resetDeathScore() {
+		DeathScore = 0; 
+	}
+
+	static int getDeathScore() {
+		return DeathScore; 
 	}
 	
 protected:
 	ofImage* displayImage; 
 	static vector<ofImage> initFigures;
 	static vector<ofImage> happyAnim; 
-	static vector<ofImage> sickAnim; 
 	static vector<ofImage> happyAnimF;
+	static vector<ofImage> sickAnim; 
 	static vector<ofImage> sickAnimF;
+	static vector<ofImage> vaccine_walking;
+	static vector<ofImage> vaccine_walkingF;
+	static vector<ofImage> vaccine_waving;
 	static ofImage deathImg; 
 	STATE currentState = START;
+	bool hasEveryBeenInfected = false; 
+	
 
 private:
 	float offset; 
@@ -64,10 +83,13 @@ private:
 	void animate();
 	void updateHealth();
 	float lifeTime = 0;
-	float lifespan = 5;
+	float lifespan = 15;
+	bool checkHealth = false; 
 	int frameNum; 
 	ofRectangle boundingBox;
 	int check = 0; 
 	int sequenceFPS = 25;
 	int offsetFrame = 0;
+	static int DeathScore;
+	
 };

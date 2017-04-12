@@ -9,9 +9,9 @@ void GuiApp::setup(){
 	CVParam.add(sweeping.set("Hand Sweeping", true));
 	CVParam.add(handSensitivity.set("Hand Sensitivity", 15, 0, 100));
 	CVParam.add(detectionRange.set("Detection Range", 20, 10, 500));
-	CVParam.add(gamePlayLength.set("Game Play Length (x30Secs)", 3, 1, 6));
+	CVParam.add(gamePlayLength.set("Game Play Length (x30Secs)", 3, 1, 120));
 	CVParam.add(skipIntroText.set("Skip Intro Text", false));
-
+	CVParam.add(skipScreenSaver.set("Skip screensaver", false));
 	CVParam.add(flipText.set("Mirror Text", true));
 	CVParam.add(skeletonFlipX.set("Flip Player(X axis)", true));
 	CVParam.add(skeletonFlipY.set("Flip Player(Y axis)", false));
@@ -19,10 +19,10 @@ void GuiApp::setup(){
 
 	genParam.setName("Parameters");
 	genParam.add(initCount.set("Inital pox count", 1, 1, 50));
-	genParam.add(maxCount.set("Max pox count",50,25,200));
+	genParam.add(maxCount.set("Max pox count",50,25,400));
 	genParam.add(minSize.set("Inital size",1,0,20));
 	genParam.add(maxSize.set("Max size", 5,0,100));
-	genParam.add(growthRate.set("Growth Rate", 30, 5, 100));
+	genParam.add(growthRate.set("Growth Rate",100, 5, 100));
 	genParam.add(migrationSpeed.set("Migration Speed", 0.25, 0, 2));
 	genParam.add(distanceX.set("Migration spread X axis", 5, 5, 500));
 	genParam.add(distanceY.set("Migration spread Y axis", 5, 5, 500));
@@ -47,7 +47,6 @@ void GuiApp::setup(){
 	CVParam.add(minCVblobSize.set("min blob size",0.01,0,2));
 	CVParam.add(maxCVblobSize.set("Max blob size",25,0,30));
 	CVParam.add(maxNumBlobs.set("Max blob detected", 8, 0, 10));
-	
 */	
 	CVParam.add(genParam);
 	CVParam.add(toropoxParam);

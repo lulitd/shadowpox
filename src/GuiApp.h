@@ -36,27 +36,15 @@ public:
 	ofParameter <bool>  skeletonFlipX;
 	ofParameter <bool>  skeletonFlipY;
 	ofParameter <bool>  skipIntroText;
+	ofParameter <bool>  skipScreenSaver;
+	ofParameter <bool>	flipText;
 	ofParameter <int>	gamePlayLength; 
 	ofParameter <bool>  sweeping;
-
-	ofParameter <bool>	flipText;
-	//ofParameter <bool> debug;
-	//ofParameter <bool> fullscreen;
-
-	//ofParameter <bool> autoSelect;
-
-	//ofParameter <bool> mouseMovement;
-	ofParameter <bool> spawn;
-	ofParameter <bool> skeleton;
-	//ofParameter <bool> openingSeq;
-	
-	//ofParameter <bool> fade;
-
-	//ofParameter <int>	fadeTime;
+	ofParameter <bool>	spawn;
+	ofParameter <bool>	skeleton;
 	ofParameter <int>   handSensitivity;
 
 	ofxPanel gui;
-	//ofxLabel availablePatients;
 
 
 

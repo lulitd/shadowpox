@@ -36,6 +36,9 @@ public:
 	void drawHuman(int color);
 	void pointsOnCirleFromLine(ofPoint, ofPoint, float, ofPoint&, ofPoint&, ofPoint&, ofPoint&);
 
+
+	void flipText();
+	
 	ofPath polyBody;
 
 	ofxTextAlignTTF text;
@@ -184,6 +187,7 @@ private:
 	int choiceSeqVaccine = -1;
 
 	string displayText = "";
+	string warningText = "One player at a time, please!";
 
 	unsigned int textAlignFlag = 0;
 	unsigned int vaccineDialog = -1;
@@ -191,5 +195,9 @@ private:
 	string fileName = "";
 	unsigned int modInfectionScore = 0;
 	bool scoreCalculated = false; 
+	bool prevFlipTextStatus = false;
+	int numOfBodiesTracked = 0; 
+
+	int textAlignmentX = 0; 
 };
 	

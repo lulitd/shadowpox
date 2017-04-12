@@ -1,17 +1,19 @@
 #include "cell.h"
 
-#define main_col 0
-#define sec_col 0
+#define main_col 125
 
 
 // TODO CHANGE POX COLORS WHEN OFF BODY
 
 vector<ofxSVG> cell::horns;
+vector<ofImage>cell::toropox;
 
 cell::cell(){
-	index = ofMap(ofRandom(20000),0,20000, -5000 *0.01,5000*0.01); // index is to ensure pox are not identical in movement and look
-	d1= ofVec2f(-1000, -1000);
-	d2= ofVec2f(-1000, -1000);
+	index = ofMap(ofRandom(20000), 0, 20000, -5000 * 0.01, 5000 * 0.01); // index is to ensure pox are not identical in movement and look
+	d1 = ofVec2f(-1000, -1000);
+	d2 = ofVec2f(-1000, -1000);
+
+	offset = ofRandomuf();
 }
 
 
@@ -26,6 +28,13 @@ void cell::setup() {
 		hornRight = &(horns[j]);
 	}
 	else  printf("Failed to set horns. Empty list");
+
+
+	if (toropox.size()) {
+		offsetFrame = (int)toropox.size() * offset;
+		toropoxFrame = &(toropox[offsetFrame]);
+	}
+	else  printf("Failed to set toropox frame. Empty list");
 }
 
 void cell::update() {
@@ -34,8 +43,6 @@ void cell::update() {
 	radius = MIN(radius, maxRadius);
 
 	isFullyGrown = (radius == maxRadius);
-
-
 
 	ofPoint p;
 
@@ -95,6 +102,11 @@ void cell::update() {
 	d1.normalize();
 	d2.normalize();
 
+
+	/*if (toropox.size()) {
+		frameNum = ((int)(ofGetElapsedTimef() * frameRate) + offsetFrame) % toropox.size();
+		toropoxFrame = &toropox[frameNum];
+	} */
 }
 
 
@@ -105,13 +117,20 @@ void cell::draw() {
 	
 			ofSetColor(main_col);
 		
-			if (!isDying) {
 
-				ofSetColor(sec_col);
+			if (!isDying) {
 				ofDrawCircle(pos.x, pos.y, radius);
 
 				if ((isToroPox || isTargeted)) {
+					/*if (toropox.size()) {
 
+						ofPushMatrix();
+
+						ofTranslate(pos.x, pos.y);
+						ofRotate((ofGetFrameNum()*-0.01*rotateSpeed) + index, 0, 0, 1);
+						toropoxFrame->draw(0,0, radius, radius);
+						ofPopMatrix();
+					} */
 					/*ofPushMatrix();
 					ofTranslate(pos.x, pos.y);
 					if (uniformRotation) {
@@ -126,6 +145,9 @@ void cell::draw() {
 					ofDrawCircle(0, 0, radius);
 					ofPopMatrix(); */
 				}
+			//	else {
+					//ofDrawCircle(pos.x, pos.y, radius);
+			//	}
 			}
 
 			else {
@@ -134,7 +156,7 @@ void cell::draw() {
 
 		float TargetY = ((1 - (targetTimer/poxHealth)) * pos.y) + ((targetTimer/poxHealth)*ofGetWindowHeight())+sin(ofGetFrameNum()*0.001);
 		float translationX = 25*cos(ofGetFrameNum()*0.001);
-		float size = ofMap(radius, minRadius, maxRadius, 0.1, 0.3, true);
+		float size = ofMap(radius, minRadius, maxRadius, 0.3, 0.5, true);
 
 		if (TargetY >= ofGetWindowHeight()) { isDefeated = TRUE;
 		isDying = false;
@@ -142,9 +164,9 @@ void cell::draw() {
 
 		ofPushMatrix();
 		ofTranslate(pos.x-5-translationX,TargetY);
-		ofScale(size);
+		ofScale(size); // general resize
 		ofRotate((ofGetFrameNum()*-0.1*rotateSpeed) + index, 0, 0, 1);
-		ofScale(1-(targetTimer/poxHealth));
+		ofScale(1-(targetTimer/poxHealth)); // shrinking resize
 		hornLeft->draw();
 		ofPopMatrix();
 		ofTranslate(pos.x+5+translationX, TargetY);
