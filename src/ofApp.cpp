@@ -381,13 +381,13 @@ void ofApp::update() {
 	float now = ofGetElapsedTimef();
 
 	//HACK to get it to fullscreen on second monitor. window must be positioned on second monitor first, then fullscreen is called. 
-	if (ofGetFrameNum() == 20   ) {
+	/*if (ofGetFrameNum() == 20   ) {
 		ofSetWindowPosition(1920, 0);
 	}
 	if (ofGetFrameNum() == 25) {
 		ofSetFullscreen(true);
 	}
-
+	*/
 	this->kinect.update();
 		
 	//if (gui->openingSeq) currentState = sequenceMode::COUNTRYCHOICE;

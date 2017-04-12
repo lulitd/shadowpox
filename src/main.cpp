@@ -13,14 +13,31 @@ int main( ){
 	ofRunApp(new ofApp());
 	*/
 
+	// Check screens size and location
+	int count;
+	GLFWmonitor** monitors = glfwGetMonitors(&count);
+	cout << "Number of screens found: " << count << endl;
 
 	ofGLFWWindowSettings settings;
-	settings.width = 1280;
-	settings.height = 768;
-	settings.resizable = true;
-	settings.decorated = false;
-	settings.setPosition(ofVec2f(0,0));
-	settings.monitor = 1;
+	if (count>1) {
+		int xM; int yM;
+		glfwGetMonitorPos(monitors[1], &xM, &yM); // We take the second monitor
+		const GLFWvidmode * desktopMode = glfwGetVideoMode(monitors[1]);
+
+		settings.width = desktopMode->width;
+		settings.height = desktopMode->height;
+		settings.setPosition(ofVec2f(xM, yM));
+
+	}
+	else {
+		settings.width = 1280;
+		settings.height = 768;
+		settings.resizable = true;
+		settings.decorated = false;
+		settings.setPosition(ofVec2f(0, 0));
+		settings.monitor = 1;
+
+	}
 	shared_ptr<ofAppBaseWindow> mainWindow = ofCreateWindow(settings);
 
 	
