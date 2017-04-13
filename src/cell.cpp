@@ -1,12 +1,12 @@
 #include "cell.h"
 
-#define main_col 125
+#define main_col 0
 
 
 // TODO CHANGE POX COLORS WHEN OFF BODY
 
 vector<ofxSVG> cell::horns;
-vector<ofImage>cell::toropox;
+vector<ofxSVG>cell::toropox;
 
 cell::cell(){
 	index = ofMap(ofRandom(20000), 0, 20000, -5000 * 0.01, 5000 * 0.01); // index is to ensure pox are not identical in movement and look
@@ -34,7 +34,7 @@ void cell::setup() {
 		offsetFrame = (int)toropox.size() * offset;
 		toropoxFrame = &(toropox[offsetFrame]);
 	}
-	else  printf("Failed to set toropox frame. Empty list");
+	else  printf("Failed to set toropox frame. Empty list"); 
 }
 
 void cell::update() {
@@ -103,10 +103,10 @@ void cell::update() {
 	d2.normalize();
 
 
-	/*if (toropox.size()) {
+	if (toropox.size()) {
 		frameNum = ((int)(ofGetElapsedTimef() * frameRate) + offsetFrame) % toropox.size();
 		toropoxFrame = &toropox[frameNum];
-	} */
+	} 
 }
 
 
@@ -122,7 +122,7 @@ void cell::draw() {
 				ofDrawCircle(pos.x, pos.y, radius);
 
 				if ((isToroPox || isTargeted)) {
-					/*if (toropox.size()) {
+					/* (toropox.size()) {
 
 						ofPushMatrix();
 

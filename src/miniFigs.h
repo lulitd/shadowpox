@@ -8,7 +8,7 @@ public:
 	~miniFig();
 	void setup(ofVec2f loc, int index);
 	void update();
-	void getInfected(ofVec2f point,int&, bool isVaccine);
+	void getInfected(ofVec2f&,int&, bool);
 	void draw();
 
 	static float countrySeverityRate;

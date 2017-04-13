@@ -19,6 +19,7 @@ int main( ){
 	cout << "Number of screens found: " << count << endl;
 
 	ofGLFWWindowSettings settings;
+
 	if (count>1) {
 		int xM; int yM;
 		glfwGetMonitorPos(monitors[1], &xM, &yM); // We take the second monitor

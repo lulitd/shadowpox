@@ -48,8 +48,6 @@ void ofApp::setup() {
 	}
 	else ofLogWarning("shadowpox","Could not find folder: svg");
 
-
-	dir.allowExt("png");
 	nFiles = dir.listDir("toropox");
 	dir.sort();
 	ofLogNotice("shadowpox") << "loading " << (ofToString(nFiles)) << " toropox frames";
@@ -62,6 +60,8 @@ void ofApp::setup() {
 	}
 	else ofLogWarning("shadowpox", "Could not find folder: toropox");
 
+
+	dir.allowExt("png");
 	nFiles = dir.listDir("anim/sick");
 	ofLogNotice("shadowpox") << "loading sick " << nFiles << " frames";
 	if (nFiles) {
@@ -381,13 +381,13 @@ void ofApp::update() {
 	float now = ofGetElapsedTimef();
 
 	//HACK to get it to fullscreen on second monitor. window must be positioned on second monitor first, then fullscreen is called. 
-	/*if (ofGetFrameNum() == 20   ) {
+	if (ofGetFrameNum() == 20) {
 		ofSetWindowPosition(1920, 0);
 	}
 	if (ofGetFrameNum() == 25) {
 		ofSetFullscreen(true);
 	}
-	*/
+	
 	this->kinect.update();
 		
 	//if (gui->openingSeq) currentState = sequenceMode::COUNTRYCHOICE;
@@ -419,6 +419,7 @@ void ofApp::update() {
 		}
 		else {
 			currentState = (gui->skipIntroText)?sequenceMode::COUNTRYCHOICE : sequenceMode::INTRO; 
+			if (screenSaverPlayer.isPlaying())screenSaverPlayer.stop();
 		}
 		break; }
 	case sequenceMode::INTRO: {
@@ -677,7 +678,7 @@ void ofApp::update() {
 				switch (vaccineDialog) {
 				case 0: {
 					displayText = "The shadowpox vaccine is\n a weakened form of the virus.\n It is not infectious. \n \n The vaccine lets you safely practice\n fighting the disease.";
-					if (now - transitionTimer > 10) { vaccineDialog = 1;
+					if (now - transitionTimer > 8) { vaccineDialog = 1;
 					transitionTimer = now;
 					}
 					break;
@@ -685,7 +686,7 @@ void ofApp::update() {
 				case 1: {
 					displayText = "Practice fighting shadowpox \n by pushing them off your body.";
 						
-					if (now - transitionTimer > 5) {
+					if (now - transitionTimer > 4) {
 						vaccineDialog = 2;
 						transitionTimer = now;
 					}
@@ -724,14 +725,14 @@ void ofApp::update() {
 				case 0: {
 					displayText = "You have caught shadowpox. \n You can fight the virus.";
 
-					if (now - transitionTimer > 5) { vaccineDialog = 1; 
+					if (now - transitionTimer > 4) { vaccineDialog = 1; 
 					transitionTimer = now;
 					}
 					break;
 				}
 				case 1: {
 					displayText = "Fight the virus by pushing \n the shadowpox off your body.";
-					if (now - transitionTimer > 7) { vaccineDialog = 2;
+					if (now - transitionTimer > 4) { vaccineDialog = 2;
 					transitionTimer = now;
 					}
 					break;
@@ -739,7 +740,7 @@ void ofApp::update() {
 				case 2: {
 					displayText = "As you fight the virus,\n you can infect others. \n";
 
-					if (now - transitionTimer > 5) { vaccineDialog = 3;
+					if (now - transitionTimer > 4) { vaccineDialog = 3;
 					transitionTimer = now;
 					}
 					break;
@@ -781,7 +782,7 @@ void ofApp::update() {
 			for (int i = 0; i < patients.size(); i++) {
 				// if tracking update!
 				if (patients[i].tracking) {
-					patients[i].isToroPox = gui->toropoxMode;//
+					patients[i].isToroPox = isVaccine;
 					patients[i].minRadius = gui->minSize;//
 					patients[i].maxRadius = gui->maxSize;//
 					patients[i].growth = gui->growthRate;//
@@ -796,26 +797,31 @@ void ofApp::update() {
 					patients[i].detectionRange = gui->detectionRange;
 					patients[i].update();
 
-					if ((ofGetElapsedTimeMillis() - spawnTimer) >= (1000.0f / (float)gui->buddingSpeed) && patients[i].cluster.size() < gui->maxCount) {
-						patients[i].addCell(p1, p2);
+					if ((now - spawnTimer) >= (1000.0f / (float)gui->buddingSpeed) && patients[i].cluster.size() < gui->maxCount) {
+						
+						spawnTimer = now;
+
+						patients[i].addCellCluster(3, p1, p2);
 
 						if (patients[i].cluster.size()) {
-							ofLogNotice("shadowpox") << ofToString(patients[i].cluster.size());
+							//ofLogNotice("shadowpox") << ofToString(patients[i].cluster.size());
 
 							for (int j = 0; j < patients[i].cluster.size(); j++) {
 
-								//if (patients[i].cluster[j].isDying) {
+								if (patients[i].cluster[j].isDying) {
 								for (int k = 0; k < figures.size(); k++) {
 									miniFig &fig = figures[k];
 								   fig.getInfected(patients[i].cluster[j].pos, infectionScore,isVaccine);
 								}
-								//}
-								//else continue;
+								}
+								else { continue; }
 							}
 						}
 					}
+
+					
 				
-}
+}	 
 
 				// if not clear the pox of that patient, only if it hasn't been cleared already
 				else {
@@ -1160,6 +1166,8 @@ void ofApp::keyReleased(int key) {
 	case 's':
 	case'S':
 		logData.save(fileName);
+
+		ofLogNotice("shadowpox") << "saving" << fileName;
 		break;
 
 	}
@@ -1183,6 +1191,21 @@ void ofApp::mousePressed(int x, int y, int button) {
 
 //--------------------------------------------------------------
 void ofApp::mouseReleased(int x, int y, int button) {
+	// makes sure we don't go over limit.
+	if (button == OF_MOUSE_BUTTON_LEFT) {
+		if (patients[selected].cluster.size() < this->patients[selected].maxCells) {
+		//	patients[selected].addCell(ofVec2f(x, y));
+		}
+	}
+
+	if (button == OF_MOUSE_BUTTON_RIGHT) {
+		for (cellCluster pox : patients) {
+			if (pox.cluster.size()) {
+				pox.cluster.clear();
+			}
+		}
+	}
+
 }
 
 //--------------------------------------------------------------
@@ -1216,6 +1239,8 @@ void ofApp::figureSetup(int amount, int percent) {
 void ofApp::exit() {
 	SaveData();
 	logData.save(fileName);
+
+	ofLogNotice("shadowpox") << "saving" << fileName;
 	screenSaverPlayer.stop();
 	screenSaverPlayer.close();
 	introTextPlayer.stop();
@@ -1224,12 +1249,15 @@ void ofApp::exit() {
 
 void ofApp::SaveData() {
 	ofxCsvRow data;
-	data.addString(ofGetTimestampString("%Y-%m-%d-%H-%M-%S-%i"));
+
 	data.addString(sourceData[(selectedCountry->index) + 1].getString(sourceCol::COUNTRY));
+	data.addString(ofGetTimestampString("%Y-%m-%d-%H-%M-%S-%i"));
 	data.addString((isVaccine) ? "Yes" : "No");
 	data.addInt(infectionScore);
 	data.addInt(miniFig::getDeathScore());
 	logData.addRow(data);
+
+	ofLogNotice("Shadowpox") << "data added to csv";
 }
 
 void ofApp::pointsOnCirleFromLine(ofPoint p1, ofPoint p2, float r, ofPoint& p3, ofPoint& p4, ofPoint& p5, ofPoint& p6) {
@@ -1245,7 +1273,7 @@ void ofApp::pointsOnCirleFromLine(ofPoint p1, ofPoint p2, float r, ofPoint& p3, 
 
 void ofApp::drawHuman(int fig_color) {
 
-	//if (kinect.isFrameNew()) {
+	if (kinect.isFrameNew()) {
 		auto bodies = kinect.getBodySource()->getBodies();
 		const auto & bonesDictionary = ofxKinectForWindows2::Data::Body::getBonesAtlas();
 
@@ -1513,6 +1541,8 @@ void ofApp::drawHuman(int fig_color) {
 				limb08.setFillColor(fig_color);
 				limb08.draw();
 				ofSetColor(fig_color, 255);
+				
+				
 				ofDrawCircle(body.joints[JointType_AnkleLeft].getPosition(), radiusJoint);
 				ofDrawCircle(body.joints[JointType_AnkleRight].getPosition(), radiusJoint);
 				ofPopStyle();
@@ -1524,7 +1554,7 @@ void ofApp::drawHuman(int fig_color) {
 		
 	}
 
-//}
+}
 
 
 
