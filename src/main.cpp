@@ -13,12 +13,9 @@ int main( ){
 	ofRunApp(new ofApp());
 	*/
 
-	// Check screens size and location
-	int count;
-	GLFWmonitor** monitors = glfwGetMonitors(&count);
-	cout << "Number of screens found: " << count << endl;
 
 	ofGLFWWindowSettings settings;
+<<<<<<< HEAD
 
 	if (count>1) {
 		int xM; int yM;
@@ -39,6 +36,14 @@ int main( ){
 		settings.monitor = 1;
 
 	}
+=======
+	settings.width = 1280;
+	settings.height = 768;
+	settings.resizable = true;
+	settings.decorated = false;
+	settings.setPosition(ofVec2f(0,0));
+	settings.monitor = 1;
+>>>>>>> parent of 39a675e... automate fullscreen on second monitor if monitor is detected
 	shared_ptr<ofAppBaseWindow> mainWindow = ofCreateWindow(settings);
 
 	
