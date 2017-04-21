@@ -34,7 +34,7 @@ void cell::setup() {
 		offsetFrame = (int)toropox.size() * offset;
 		toropoxFrame = &(toropox[offsetFrame]);
 	}
-	else  printf("Failed to set toropox frame. Empty list");
+	else  printf("Failed to set toropox frame. Empty list"); 
 }
 
 void cell::update() {
@@ -103,10 +103,10 @@ void cell::update() {
 	d2.normalize();
 
 
-	/*if (toropox.size()) {
+	if (toropox.size()) {
 		frameNum = ((int)(ofGetElapsedTimef() * frameRate) + offsetFrame) % toropox.size();
 		toropoxFrame = &toropox[frameNum];
-	} */
+	} 
 }
 
 
@@ -122,7 +122,7 @@ void cell::draw() {
 				ofDrawCircle(pos.x, pos.y, radius);
 
 				if ((isToroPox || isTargeted)) {
-					/*if (toropox.size()) {
+					/* (toropox.size()) {
 
 						ofPushMatrix();
 

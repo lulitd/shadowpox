@@ -130,7 +130,7 @@ public:
 private:
 	int framerate = 25;
 	void figureSetup(int amount, int percent);
-	int figureAmount = 100;
+	int figureAmount = 99;
 	bool dataIsLoaded = false;
 	JointType jointsArray[JointType_Count] = {
 		JointType_SpineBase ,

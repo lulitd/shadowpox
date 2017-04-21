@@ -6,8 +6,8 @@
 #define MAX_DEPTH_CLIP		10000.0f
 
 #define BACKGROUND_COLOR 0
-#define FIGURE_COLOR 255 
-#define FIGURE_COLOR_TRANSITION 200 
+#define FIGURE_COLOR 255
+#define FIGURE_COLOR_TRANSITION 200
 
 
 //--------------------------------------------------------------
@@ -32,7 +32,7 @@ void ofApp::setup() {
 	filein.close();
 
 	// todo move all image loading to new thread!
-	// loading in all the svgs 
+	// loading in all the svgs
 	// read the directory for the images we know that they are named in seq
 	ofDirectory dir;
 	dir.allowExt("svg");
@@ -47,7 +47,6 @@ void ofApp::setup() {
 		}
 	}
 	else ofLogWarning("shadowpox","Could not find folder: svg");
-
 
 	nFiles = dir.listDir("toropox");
 	dir.sort();
@@ -324,7 +323,7 @@ void ofApp::setup() {
 		}
 	}
 
-	// create our map datastructure to hold all the pairings. 
+	// create our map datastructure to hold all the pairings.
 	for (int i = 0; i < 11; i++) {
 		countriesInRegion.insert(pair<int, vector<countryInfo>>(i, vector<countryInfo>()));
 	}
@@ -368,7 +367,7 @@ void ofApp::setup() {
 	// time // country // choice // score
 	logData.addRow(header);
 
-	
+
 	currentState = sequenceMode::SCREENSAVER;
 
 
@@ -377,19 +376,20 @@ void ofApp::setup() {
 
 //--------------------------------------------------------------
 void ofApp::update() {
-	
+
 	float now = ofGetElapsedTimef();
 
-	//HACK to get it to fullscreen on second monitor. window must be positioned on second monitor first, then fullscreen is called. 
+	//HACK to get it to fullscreen on second monitor. window must be positioned on second monitor first, then fullscreen is called.
+
 	if (ofGetFrameNum() == 20   ) {
 		ofSetWindowPosition(1920, 0);
 	}
 	if (ofGetFrameNum() == 25) {
 		ofSetFullscreen(true);
 	}
-	
+
 	this->kinect.update();
-		
+
 	//if (gui->openingSeq) currentState = sequenceMode::COUNTRYCHOICE;
 
 
@@ -401,7 +401,7 @@ void ofApp::update() {
 		if (!screenSaverPlayer.isPlaying()) screenSaverPlayer.play();
 		if (kinect.isFrameNew()) {
 			auto bodies = kinect.getBodySource()->getBodies();
-			  
+
 			const auto & bonesDictionary = ofxKinectForWindows2::Data::Body::getBonesAtlas();
 
 			numOfBodiesTracked = 0;
@@ -418,7 +418,8 @@ void ofApp::update() {
 		screenSaverPlayer.update();
 		}
 		else {
-			currentState = (gui->skipIntroText)?sequenceMode::COUNTRYCHOICE : sequenceMode::INTRO; 
+			currentState = (gui->skipIntroText)?sequenceMode::COUNTRYCHOICE : sequenceMode::INTRO;
+			if (screenSaverPlayer.isPlaying())screenSaverPlayer.stop();
 		}
 		break; }
 	case sequenceMode::INTRO: {
@@ -578,7 +579,7 @@ void ofApp::update() {
 
 							vaccineButton.bounds.setPosition((100 + ((f / 10)+1) * 100) - vaccineButton.size.x / 2, ofGetHeight() / 2 - vaccineButton.size.y / 2);
 							virusButton.bounds.setPosition(ofGetWidth() - vaccineButton.size.x / 2 - ((((100 - f) / 10) + 1) * 100), ofGetHeight() / 2 - vaccineButton.size.y / 2);
-							
+
 							textAlignmentX = (vaccineButton.bounds.getCenter().x + virusButton.bounds.getCenter().x) / 2;
 							return;
 
@@ -604,8 +605,8 @@ void ofApp::update() {
 
 		ofShowCursor();
 		drawHuman(FIGURE_COLOR_TRANSITION);
-		// CHOICE 	
-		// show choice 
+		// CHOICE
+		// show choice
 		if (choiceSeqVaccine == 0) {
 			float currentVaccine = sourceData[(selectedCountry->index) + 1].getFloat(sourceCol::CURRENTVACCINATIONRATE);
 
@@ -662,7 +663,7 @@ void ofApp::update() {
 			// show text
 			// delay
 
-			if (now - transitionTimer > 5) {				
+			if (now - transitionTimer > 5) {
 				sourceData.save("csv/vax_serverity.csv");
 				ofLogNotice("shadowpox") << "data saved!" << "csv/vax_serverity.csv";
 				choiceSeqVaccine = 3;
@@ -677,15 +678,15 @@ void ofApp::update() {
 				switch (vaccineDialog) {
 				case 0: {
 					displayText = "The shadowpox vaccine is\n a weakened form of the virus.\n It is not infectious. \n \n The vaccine lets you safely practice\n fighting the disease.";
-					if (now - transitionTimer > 10) { vaccineDialog = 1;
+					if (now - transitionTimer > 8) { vaccineDialog = 1;
 					transitionTimer = now;
 					}
 					break;
 				}
 				case 1: {
 					displayText = "Practice fighting shadowpox \n by pushing them off your body.";
-						
-					if (now - transitionTimer > 5) {
+
+					if (now - transitionTimer > 4) {
 						vaccineDialog = 2;
 						transitionTimer = now;
 					}
@@ -693,7 +694,7 @@ void ofApp::update() {
 				}
 				case 2: {
 					displayText = "If you had caught the wild virus, \n you would be infecting others \n while you fight it. \n";
-				
+
 					if (now - transitionTimer > 5) {
 						vaccineDialog = 3;
 						transitionTimer = now;
@@ -701,7 +702,7 @@ void ofApp::update() {
 					break;
 				}
 
-				case 3: { 
+				case 3: {
 					displayText="Your Protection Score is the number \n of people you have NOT infected \n because you are immunized. \n ";
 
 					if (now - transitionTimer > 5) {
@@ -724,14 +725,14 @@ void ofApp::update() {
 				case 0: {
 					displayText = "You have caught shadowpox. \n You can fight the virus.";
 
-					if (now - transitionTimer > 5) { vaccineDialog = 1; 
+					if (now - transitionTimer > 4) { vaccineDialog = 1;
 					transitionTimer = now;
 					}
 					break;
 				}
 				case 1: {
 					displayText = "Fight the virus by pushing \n the shadowpox off your body.";
-					if (now - transitionTimer > 7) { vaccineDialog = 2;
+					if (now - transitionTimer > 4) { vaccineDialog = 2;
 					transitionTimer = now;
 					}
 					break;
@@ -739,7 +740,7 @@ void ofApp::update() {
 				case 2: {
 					displayText = "As you fight the virus,\n you can infect others. \n";
 
-					if (now - transitionTimer > 5) { vaccineDialog = 3;
+					if (now - transitionTimer > 4) { vaccineDialog = 3;
 					transitionTimer = now;
 					}
 					break;
@@ -771,7 +772,7 @@ void ofApp::update() {
 		ofHideCursor();
 		if (now - gameTimer < 30 * gui->gamePlayLength)
 		{
-			// timer 
+			// timer
 			for (int k = 0; k < figures.size(); k++) {
 				figures[k].update();
 				figures[k].changeState(miniFig::HAPPY);
@@ -781,7 +782,7 @@ void ofApp::update() {
 			for (int i = 0; i < patients.size(); i++) {
 				// if tracking update!
 				if (patients[i].tracking) {
-					patients[i].isToroPox = gui->toropoxMode;//
+					patients[i].isToroPox = isVaccine;
 					patients[i].minRadius = gui->minSize;//
 					patients[i].maxRadius = gui->maxSize;//
 					patients[i].growth = gui->growthRate;//
@@ -796,9 +797,9 @@ void ofApp::update() {
 					patients[i].detectionRange = gui->detectionRange;
 					patients[i].update();
 
-					if ((ofGetElapsedTimeMillis() - spawnTimer) >= (1000.0f / (float)gui->buddingSpeed) && patients[i].cluster.size() < gui->maxCount) {
-						patients[i].addCellCluster(2,p1, p2);
+					if ((now - spawnTimer) >= (1000.0f / (float)gui->buddingSpeed) && patients[i].cluster.size() < gui->maxCount) {
 
+						patients[i].addCellCluster(3, p1, p2);
 						spawnTimer = ofGetElapsedTimeMillis();
 						if (patients[i].cluster.size()) {
 							//ofLogNotice("shadowpox") << ofToString(patients[i].cluster.size());
@@ -811,12 +812,12 @@ void ofApp::update() {
 								   fig.getInfected(patients[i].cluster[j].pos, infectionScore,isVaccine);
 								}
 								}
-								else continue;
+
+								else { continue; }
 							}
 						}
 					}
-				
-}
+				}
 
 				// if not clear the pox of that patient, only if it hasn't been cleared already
 				else {
@@ -825,12 +826,11 @@ void ofApp::update() {
 					}
 				}
 			}
-
 		}
-		else { currentState = sequenceMode::END; 
+		else { currentState = sequenceMode::END;
 		endDialog = 0;
 		transitionTimer = now;
-		
+
 		}
 		break;
 	}
@@ -876,10 +876,10 @@ void ofApp::update() {
 				transitionTimer = now;
 			}
 			break;
-		
+
 		}
 		case 3: {
-			
+
 			selectedCountry = nullptr;
 			selectedRegion = nullptr;
 			isVaccine = false;
@@ -888,12 +888,12 @@ void ofApp::update() {
 			scoreCalculated = false;
 			// after a certain amount of time
 			currentState = sequenceMode::SCREENSAVER;
-			miniFig::resetDeathScore(); 
+			miniFig::resetDeathScore();
 
 			textAlignFlag = 0;
 			textAlignFlag |= ofxTextAlign::HORIZONTAL_ALIGN_CENTER;
 			textAlignFlag |= ofxTextAlign::VERTICAL_ALIGN_TOP;
-			break; 
+			break;
 		}
 		}
 
@@ -943,7 +943,7 @@ void ofApp::draw() {
 			if (chooseRegion) {
 				worldMap.draw(0, 0, ofGetWidth(), ofGetHeight());
 				ofSetColor(255, 255, 255, 255);
-				glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA); // set blending mode 
+				glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA); // set blending mode
 
 				this->skeletonFBO.draw(0, 0, ofGetWidth(), ofGetHeight());
 
@@ -987,7 +987,7 @@ void ofApp::draw() {
 
 
 				ofSetColor(255, 255, 255, 255);
-				glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA); // set blending mode 
+				glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA); // set blending mode
 
 				this->skeletonFBO.draw(0, 0, ofGetWidth(), ofGetHeight());
 
@@ -1018,7 +1018,7 @@ void ofApp::draw() {
 				}
 
 				ofSetColor(255, 255, 255, 255);
-				glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA); // set blending mode 
+				glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA); // set blending mode
 				this->skeletonFBO.draw(0, 0, ofGetWidth(), ofGetHeight());
 
 				ofEnableAlphaBlending();
@@ -1060,7 +1060,7 @@ void ofApp::draw() {
 					glPopMatrix();
 
 				}
-			
+
 			break;
 		}
 		case sequenceMode::GAMEPLAY: {
@@ -1073,7 +1073,7 @@ void ofApp::draw() {
 				}
 
 				ofSetColor(255, 255, 255, 255);
-				glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA); // set blending mode 
+				glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA); // set blending mode
 				this->skeletonFBO.draw(0, 0, ofGetWidth(), ofGetHeight());
 
 				ofEnableAlphaBlending();
@@ -1091,7 +1091,7 @@ void ofApp::draw() {
 				text.draw(displayText + ofToString(infectionScore), 0, 0, textAlignFlag);
 
 				glPopMatrix();
-			
+
 
 			break;
 		}
@@ -1161,6 +1161,8 @@ void ofApp::keyReleased(int key) {
 	case 's':
 	case'S':
 		logData.save(fileName);
+
+		ofLogNotice("shadowpox") << "saving" << fileName;
 		break;
 
 	}
@@ -1184,6 +1186,21 @@ void ofApp::mousePressed(int x, int y, int button) {
 
 //--------------------------------------------------------------
 void ofApp::mouseReleased(int x, int y, int button) {
+	// makes sure we don't go over limit.
+	if (button == OF_MOUSE_BUTTON_LEFT) {
+		if (patients[selected].cluster.size() < this->patients[selected].maxCells) {
+		//	patients[selected].addCell(ofVec2f(x, y));
+		}
+	}
+
+	if (button == OF_MOUSE_BUTTON_RIGHT) {
+		for (cellCluster pox : patients) {
+			if (pox.cluster.size()) {
+				pox.cluster.clear();
+			}
+		}
+	}
+
 }
 
 //--------------------------------------------------------------
@@ -1217,6 +1234,8 @@ void ofApp::figureSetup(int amount, int percent) {
 void ofApp::exit() {
 	SaveData();
 	logData.save(fileName);
+
+	ofLogNotice("shadowpox") << "saving" << fileName;
 	screenSaverPlayer.stop();
 	screenSaverPlayer.close();
 	introTextPlayer.stop();
@@ -1225,12 +1244,15 @@ void ofApp::exit() {
 
 void ofApp::SaveData() {
 	ofxCsvRow data;
-	data.addString(ofGetTimestampString("%Y-%m-%d-%H-%M-%S-%i"));
+
 	data.addString(sourceData[(selectedCountry->index) + 1].getString(sourceCol::COUNTRY));
+	data.addString(ofGetTimestampString("%Y-%m-%d-%H-%M-%S-%i"));
 	data.addString((isVaccine) ? "Yes" : "No");
 	data.addInt(infectionScore);
 	data.addInt(miniFig::getDeathScore());
 	logData.addRow(data);
+
+	ofLogNotice("Shadowpox") << "data added to csv";
 }
 
 void ofApp::pointsOnCirleFromLine(ofPoint p1, ofPoint p2, float r, ofPoint& p3, ofPoint& p4, ofPoint& p5, ofPoint& p6) {
@@ -1246,7 +1268,7 @@ void ofApp::pointsOnCirleFromLine(ofPoint p1, ofPoint p2, float r, ofPoint& p3, 
 
 void ofApp::drawHuman(int fig_color) {
 
-	//if (kinect.isFrameNew()) {
+	if (kinect.isFrameNew()) {
 		auto bodies = kinect.getBodySource()->getBodies();
 		const auto & bonesDictionary = ofxKinectForWindows2::Data::Body::getBonesAtlas();
 
@@ -1257,7 +1279,7 @@ void ofApp::drawHuman(int fig_color) {
 		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 		projector.beginAsCamera(gui->skeletonFlipX, gui->skeletonFlipY);
 
-		numOfBodiesTracked = 0; 
+		numOfBodiesTracked = 0;
 		for (auto body : bodies) {
 			patients[body.bodyId].tracking = false;
 
@@ -1298,7 +1320,7 @@ void ofApp::drawHuman(int fig_color) {
 				else {
 						patients[body.bodyId].handStateR = HandState_Closed;
 						patients[body.bodyId].handStateL = HandState_Closed;
-					
+
 				}
 				patients[body.bodyId].tracking = true;
 
@@ -1514,6 +1536,8 @@ void ofApp::drawHuman(int fig_color) {
 				limb08.setFillColor(fig_color);
 				limb08.draw();
 				ofSetColor(fig_color, 255);
+
+
 				ofDrawCircle(body.joints[JointType_AnkleLeft].getPosition(), radiusJoint);
 				ofDrawCircle(body.joints[JointType_AnkleRight].getPosition(), radiusJoint);
 				ofPopStyle();
@@ -1522,15 +1546,7 @@ void ofApp::drawHuman(int fig_color) {
 		this->projector.endAsCamera();
 		this->skeletonFBO.end();
 
-		
+
 	}
 
-//}
-
-
-
-
-
-
-
-
+}

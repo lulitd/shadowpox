@@ -80,7 +80,7 @@ protected:
 
 private:
 	float phase;
-	int frameRate = 24; 
+	int frameRate = 25 ; 
 	float offset; 
 	int frameNum = 0; 
 	int offsetFrame = 0; 

@@ -135,14 +135,16 @@ void miniFig :: animate() {
 
 void miniFig::move() {
 
-	if (boundingBox.getLeft() < 0|| boundingBox.getRight() > ofGetWidth()) Velocity.x *= -1; // flip to keep within the screen
-	if (boundingBox.getBottom()> ofGetHeight() || boundingBox.getTop() < 0) Velocity.y *= -1;
+	if (boundingBox.getLeft()+20 < 0|| boundingBox.getRight()-20> ofGetWidth()) Velocity.x *= -1; // flip to keep within the screen
+	if (boundingBox.getBottom()-20> ofGetHeight() || boundingBox.getTop()+20 < 0) Velocity.y *= -1;
 	boundingBox.position += Velocity;
 
 }
 
-void miniFig::getInfected(ofVec2f point, int &score, bool isVaccine) {
+void miniFig::getInfected(ofVec2f& point, int &score, bool isVaccine) {
 	if (!isVaccine) {
+
+		
 		if (boundingBox.inside(point)
 			&& currentState != SICK
 			&& ofRandomuf() < countrySeverityRate
