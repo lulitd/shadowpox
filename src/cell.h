@@ -28,10 +28,9 @@ public:
 			break;
 			}
 		case TOROPOX: {
-			ofImage img; 
-			img.load(filename);
-			img.setAnchorPercent(0.5, 0.5); // allow us to draw from center
-			toropox.push_back(img);
+			ofxSVG svg;
+			svg.load(filename);
+			toropox.push_back(svg);
 			break;
 		}
 
@@ -76,8 +75,8 @@ protected:
 	static vector<ofxSVG> horns;
 	ofxSVG* hornLeft;
 	ofxSVG* hornRight;
-	static vector <ofImage> toropox; 
-	ofImage* toropoxFrame; 
+	static vector <ofxSVG> toropox;
+	ofxSVG* toropoxFrame;
 
 private:
 	float phase;

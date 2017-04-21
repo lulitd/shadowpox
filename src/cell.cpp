@@ -1,12 +1,12 @@
 #include "cell.h"
 
-#define main_col 125
+#define main_col 0
 
 
 // TODO CHANGE POX COLORS WHEN OFF BODY
 
 vector<ofxSVG> cell::horns;
-vector<ofImage>cell::toropox;
+vector<ofxSVG>cell::toropox;
 
 cell::cell(){
 	index = ofMap(ofRandom(20000), 0, 20000, -5000 * 0.01, 5000 * 0.01); // index is to ensure pox are not identical in movement and look

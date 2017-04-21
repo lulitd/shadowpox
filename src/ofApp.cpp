@@ -49,7 +49,6 @@ void ofApp::setup() {
 	else ofLogWarning("shadowpox","Could not find folder: svg");
 
 
-	dir.allowExt("png");
 	nFiles = dir.listDir("toropox");
 	dir.sort();
 	ofLogNotice("shadowpox") << "loading " << (ofToString(nFiles)) << " toropox frames";
@@ -62,6 +61,7 @@ void ofApp::setup() {
 	}
 	else ofLogWarning("shadowpox", "Could not find folder: toropox");
 
+	dir.allowExt("png");
 	nFiles = dir.listDir("anim/sick");
 	ofLogNotice("shadowpox") << "loading sick " << nFiles << " frames";
 	if (nFiles) {
@@ -381,13 +381,13 @@ void ofApp::update() {
 	float now = ofGetElapsedTimef();
 
 	//HACK to get it to fullscreen on second monitor. window must be positioned on second monitor first, then fullscreen is called. 
-	/*if (ofGetFrameNum() == 20   ) {
+	if (ofGetFrameNum() == 20   ) {
 		ofSetWindowPosition(1920, 0);
 	}
 	if (ofGetFrameNum() == 25) {
 		ofSetFullscreen(true);
 	}
-	*/
+	
 	this->kinect.update();
 		
 	//if (gui->openingSeq) currentState = sequenceMode::COUNTRYCHOICE;
@@ -797,20 +797,21 @@ void ofApp::update() {
 					patients[i].update();
 
 					if ((ofGetElapsedTimeMillis() - spawnTimer) >= (1000.0f / (float)gui->buddingSpeed) && patients[i].cluster.size() < gui->maxCount) {
-						patients[i].addCell(p1, p2);
+						patients[i].addCellCluster(2,p1, p2);
 
+						spawnTimer = ofGetElapsedTimeMillis();
 						if (patients[i].cluster.size()) {
-							ofLogNotice("shadowpox") << ofToString(patients[i].cluster.size());
+							//ofLogNotice("shadowpox") << ofToString(patients[i].cluster.size());
 
 							for (int j = 0; j < patients[i].cluster.size(); j++) {
 
-								//if (patients[i].cluster[j].isDying) {
+								if (patients[i].cluster[j].isDying) {
 								for (int k = 0; k < figures.size(); k++) {
 									miniFig &fig = figures[k];
 								   fig.getInfected(patients[i].cluster[j].pos, infectionScore,isVaccine);
 								}
-								//}
-								//else continue;
+								}
+								else continue;
 							}
 						}
 					}
@@ -1326,7 +1327,7 @@ void ofApp::drawHuman(int fig_color) {
 
 				for (auto bone : bonesDictionary) {
 					p1 = projector.getScreenCoordinateOfWorldPosition(body.joints[JointType_Neck].getPosition());
-					p2 = projector.getScreenCoordinateOfWorldPosition(body.joints[JointType_SpineMid].getPosition());
+					p2 = projector.getScreenCoordinateOfWorldPosition(body.joints[JointType_SpineBase].getPosition());
 
 
 					patients[body.bodyId].bounds1 = p1;
