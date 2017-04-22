@@ -466,54 +466,94 @@ void ofApp::update() {
 					}
 				}
 				projector.endAsCamera();
-				if (selectedCountry == nullptr && selectedRegion == nullptr) {
-					chooseRegion = true;
-				}
-				// show regions
-				if (chooseRegion || selectedRegion == nullptr) {
+			}
+			drawHuman(FIGURE_COLOR_TRANSITION);
 
-					displayText = "Please choose your region";
+			if (selectedCountry == nullptr && selectedRegion == nullptr) {
+				chooseRegion = true;
+				countrySelect = false;
+			}
 
-					for (int i = 0; i < boundaries.size(); i++) {
-						// replace mouseX and mouseY with body.sel;
-						if (boundaries[i].inside(rightHand.pos)) {
-							regSel = i;
-							break;
-						}
-						else { regSel = -1; }
-					}
+			//pick a region
+			if (chooseRegion || selectedRegion == nullptr) {
+			
+				displayText = "Please choose your region";
 
-					if (regSel != -1) {
-						displayRegion = &regions[regSel];
-						if (rightHand.currentHandState == HandState::HandState_Closed && rightHand.HandStateCounter > 50) {
-							chooseRegion = false;
-							selectedRegion = &countriesInRegion.at(regSel);
-							rightHand.HandStateCounter = 0;
-						}
+				for (int i = 0; i < boundaries.size(); i++) {
+				
+					if (boundaries[i].inside(rightHand.pos)) {
+						regSel = i;
+						break;
 					}
 					else {
-						rightHand.HandStateCounter = 0;
+						regSel = -1;
 					}
 				}
-				else {
-					for (unsigned n = 0; n < selectedRegion->size(); n++) {
-						if (selectedRegion->at(n).bounds.inside(rightHand.pos)) {
-							selectedCountry = &(selectedRegion->at(n));
-							break;
+			
+				if (regSel != -1) {
+					displayRegion = &regions[regSel];
+
+					// check if its been confirmed
+					if (false) {
+						chooseRegion = false;
+						selectedRegion = &countriesInRegion.at(regSel);
+
+						transitionTimer = now;
+						countrySelect = true;
+
+						for (unsigned n = 0; n < selectedRegion->size(); n++) {
+							selectedRegion->at(n).bounds.setPosition(flagLocations[n]);
 						}
-					}
-					if (rightHand.currentHandState == HandState::HandState_Closed && rightHand.HandStateCounter > handPointerStateCounterThres) {
 
-						float f = sourceData[(selectedCountry->index) + 1].getFloat(sourceCol::CURRENTVACCINATIONRATE);
-
-						if (f + 1 > 80) f--;
-						sourceData[(selectedCountry->index) + 1].setFloat(sourceCol::CURRENTVACCINATIONRATE, f);
-						currentState = sequenceMode::VACCINECHOICE;
-						displayText = "Shadowpox vaccination rate in \n" + sourceData[(selectedCountry->index) + 1].getString(sourceCol::COUNTRY) + ": \n" + ofToString(f, 2) + "%";
-						return;
 					}
 
 				}
+
+			}
+		
+			
+			else if (countrySelect) {
+
+				displayText = "Please select your Country";
+
+				for (unsigned n = 0; n < selectedRegion->size(); n++) {
+
+					if (selectedRegion->at(n).bounds.inside(rightHand.pos)) {
+					
+						selectedCountryInRegion = n; 
+						
+						// check if it has been selected
+						if (now - transitionTimer > 2) {
+						
+							selectedCountry = &(selectedRegion->at(n));
+							float f = sourceData[(selectedCountry->index) + 1].getFloat(sourceCol::CURRENTVACCINATIONRATE);
+
+							if (f + 1 > 80) f--;
+							sourceData[(selectedCountry->index) + 1].setFloat(sourceCol::CURRENTVACCINATIONRATE, f);
+
+							currentState = sequenceMode::VACCINECHOICE;
+							transitionTimer = now;
+							choiceSeqVaccine = 0;
+
+							figureSetup(figureAmount, f);
+							
+							displayText = "Shadowpox vaccination rate in \n" + sourceData[(selectedCountry->index) + 1].getString(sourceCol::COUNTRY) + ": \n" + ofToString(f, 0) + "%";
+						
+							vaccineButton.bounds.setPosition((100 + ((f / 10) + 1) * 100) - vaccineButton.size.x / 2, ofGetHeight() / 2 - vaccineButton.size.y / 2);
+							virusButton.bounds.setPosition(ofGetWidth() - vaccineButton.size.x / 2 - ((((100 - f) / 10) + 1) * 100), ofGetHeight() / 2 - vaccineButton.size.y / 2);
+
+							textAlignmentX = (vaccineButton.bounds.getCenter().x + virusButton.bounds.getCenter().x) / 2;
+							return;
+						}
+					
+						break;
+					}
+
+					else {
+						selectedCountryInRegion = -1;
+					}
+				}
+
 			}
 		}
 		else {
