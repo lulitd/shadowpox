@@ -122,15 +122,18 @@ void cell::draw() {
 				ofDrawCircle(pos.x, pos.y, radius);
 
 				if ((isToroPox || isTargeted)) {
-					/* (toropox.size()) {
+					if (toropox.size()) {
 
 						ofPushMatrix();
 
 						ofTranslate(pos.x, pos.y);
+
+						float size = ofMap(radius, minRadius, maxRadius, 0.3, 0.5, true);
+						ofScale(size);
 						ofRotate((ofGetFrameNum()*-0.01*rotateSpeed) + index, 0, 0, 1);
-						toropoxFrame->draw(0,0, radius, radius);
+						toropoxFrame->draw();
 						ofPopMatrix();
-					} */
+					} 
 					/*ofPushMatrix();
 					ofTranslate(pos.x, pos.y);
 					if (uniformRotation) {

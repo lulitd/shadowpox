@@ -299,7 +299,6 @@ void ofApp::setup() {
 
 	skeletonFBO.allocate(ofGetScreenWidth(), ofGetScreenHeight(), GL_RGBA);
 
-
 	for (int rows = 0; rows < 10; rows++) {
 		for (int columns = 0; columns < 10; columns++) {
 			ofVec2f loc = ofVec2f((rows * 75) + 100, (columns * 100) + 100);
@@ -307,14 +306,12 @@ void ofApp::setup() {
 		}
 	}
 
-
 	for (int rows = 0; rows < 10; rows++) {
 		for (int columns = 0; columns < 10; columns++) {
 			ofVec2f loc = ofVec2f(ofGetScreenWidth() - (rows * 75) - 100, ofGetScreenHeight() - (columns * 100) - 100);
 			rightLocations.push_back(loc);
 		}
 	}
-
 
 	for (int columns = 0; columns < 4; columns++) {
 		for (int rows = 0; rows < 8; rows++) {
@@ -340,7 +337,6 @@ void ofApp::setup() {
 	8.Current Vaccination Rate float
 	*/
 
-
 	if (sourceData.load("csv/vax_serverity.csv")) {
 		dataIsLoaded = true;
 		for (auto row : sourceData) {
@@ -358,8 +354,8 @@ void ofApp::setup() {
 	ofLogNotice("shadowpox", "file created:"+ fileName);
 
 	ofxCsvRow header;
-	header.addString("Country Choice");
 	header.addString("Date");
+	header.addString("Country Choice");
 	header.addString("Vaccination Choice");
 	header.addString("Score");
 	header.addString("Deaths");
@@ -886,6 +882,7 @@ void ofApp::update() {
 			}
 			// show the score!
 			SaveData();
+
 			endDialog = 1;
 		}
 		case 1:{
@@ -1273,7 +1270,7 @@ void ofApp::figureSetup(int amount, int percent) {
 
 void ofApp::exit() {
 	SaveData();
-	logData.save(fileName);
+	///logData.save(fileName);
 
 	ofLogNotice("shadowpox") << "saving" << fileName;
 	screenSaverPlayer.stop();
@@ -1285,14 +1282,17 @@ void ofApp::exit() {
 void ofApp::SaveData() {
 	ofxCsvRow data;
 
+	// d/m/y h:m:s
+	//data.addString(ofGetTimestampString("%Y-%m-%d-%H-%M-%S-%i"));
+	data.addString(ofGetTimestampString("%d/%m/%Y %H:%M:%S"));
 	data.addString(sourceData[(selectedCountry->index) + 1].getString(sourceCol::COUNTRY));
-	data.addString(ofGetTimestampString("%Y-%m-%d-%H-%M-%S-%i"));
 	data.addString((isVaccine) ? "Yes" : "No");
 	data.addInt(infectionScore);
 	data.addInt(miniFig::getDeathScore());
 	logData.addRow(data);
-
+	logData.save(fileName);
 	ofLogNotice("Shadowpox") << "data added to csv";
+
 }
 
 void ofApp::pointsOnCirleFromLine(ofPoint p1, ofPoint p2, float r, ofPoint& p3, ofPoint& p4, ofPoint& p5, ofPoint& p6) {
