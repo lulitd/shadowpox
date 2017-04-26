@@ -33,11 +33,10 @@ public:
 	void gotMessage(ofMessage msg);
 	void exit();
 	void SaveData();
-	void drawHuman(int color);
+	void drawHuman(int color, bool showCursor=false);
 	void pointsOnCirleFromLine(ofPoint, ofPoint, float, ofPoint&, ofPoint&, ofPoint&, ofPoint&);
 
 
-	void flipText();
 	
 	ofPath polyBody;
 
@@ -84,9 +83,11 @@ public:
 		HandState currentHandState;
 		HandState prevHandState;
 		int HandStateCounter = 0;
-	} rightHand;
+		ofImage cursor;
 
-	int handPointerStateCounterThres = 10;
+	} rightHand,leftHand;
+
+	int handPointerStateCounterThres = 3;
 	countryInfo* selectedCountry = nullptr;
 
 	bool chooseRegion = false;
@@ -122,46 +123,18 @@ public:
 
 	ofxCsv sourceData;
 	ofxCsv logData;
+	ofxCsv codeData; 
 	//ofxCsvRow selectedCountry;
 
 	int regSel = -1;
-	ofImage* handGuideImage;
+	int pastRegSel = -1;
 	
 private:
 	int framerate = 25;
 	void figureSetup(int amount, int percent);
 	int figureAmount = 99;
 	bool dataIsLoaded = false;
-	JointType jointsArray[JointType_Count] = {
-		JointType_SpineBase ,
-		JointType_SpineMid ,
-		JointType_Neck ,
-		JointType_Head ,
-		JointType_ShoulderLeft,
-		JointType_ElbowLeft,
-		JointType_WristLeft ,
-		JointType_HandLeft ,
-		JointType_ShoulderRight ,
-		JointType_ElbowRight ,
-		JointType_WristRight ,
-		JointType_HandRight ,
-		JointType_HipLeft,
-		JointType_KneeLeft ,
-		JointType_AnkleLeft,
-		JointType_FootLeft,
-		JointType_HipRight ,
-		JointType_KneeRight,
-		JointType_AnkleRight ,
-		JointType_FootRight ,
-		JointType_SpineShoulder ,
-		JointType_HandTipLeft ,
-		JointType_ThumbLeft ,
-		JointType_HandTipRight ,
-		JointType_ThumbRight ,
-	};
 
-	map <JointType, ofPoint > jointsInScreenPos;
-	map <JointType, std::pair<ofPoint, ofPoint>> jointsCoords;
 	ofImage worldMap;
 	ofxSVG bounds;
 	std::vector<ofPolyline> boundaries;
@@ -182,7 +155,7 @@ private:
 		ofImage image;
 		int index;
 		ofPoint size;
-	} vaccineButton, virusButton;
+	} vaccineButton, virusButton, backButton,skipButton;
 
 	int choiceSeqVaccine = -1;
 

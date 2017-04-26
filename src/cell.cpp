@@ -3,7 +3,7 @@
 #define main_col 0
 
 
-// TODO CHANGE POX COLORS WHEN OFF BODY
+// TODO correct toropox animation cells.
 
 vector<ofxSVG> cell::horns;
 vector<ofxSVG>cell::toropox;
@@ -123,6 +123,7 @@ void cell::draw() {
 				if ((isToroPox)) {
 					if (toropox.size()) {
 
+						/* scaling issue?
 						ofPushMatrix();
 
 						ofTranslate(pos.x, pos.y);
@@ -131,6 +132,9 @@ void cell::draw() {
 						//ofScale(size);
 						toropoxFrame->draw();
 						ofPopMatrix();
+						*/
+
+						ofDrawCircle(pos.x, pos.y, radius);
 					}
 
 					else {

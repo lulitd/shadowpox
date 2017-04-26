@@ -10,6 +10,10 @@
 #define FIGURE_COLOR_TRANSITION 200
 
 
+//TODO: ADD SKIP BUTTON
+//TODO: KINECT SELECTION
+
+
 //--------------------------------------------------------------
 void ofApp::setup() {
 	text.load("font/euro.ttf", 55, true, true, false, false, 72);
@@ -219,21 +223,18 @@ void ofApp::setup() {
 	}
 	else ofLogWarning("shadowpox", "Could not find folder:choices/flags");
 
-	nFiles = dir.listDir("choices/hands");
+	nFiles = dir.listDir("choices/cursor");
 	dir.sort();
 	ofLogNotice("shadowpox") << "loading " << nFiles << " hand icons";
 	if (nFiles) {
-		for (int i = 0; i < dir.numFiles(); i++) {
-			// get file paths to load into cells
-			ofImage r;
-			r.load(dir.getPath(i));
-			r.setAnchorPercent(0.5, 0.5);
-			hands.push_back(r);
 
-		}
-		handGuideImage = &(hands [0]);
+			leftHand.cursor.load(dir.getPath(0));
+			leftHand.cursor.setAnchorPercent(0.5, 0.5);
+
+			rightHand.cursor.load(dir.getPath(0));
+			rightHand.cursor.setAnchorPercent(0.5, 0.5);
 	}
-	else ofLogWarning("shadowpox", "Could not find folder:choices/hands");
+	else ofLogWarning("shadowpox", "Could not find folder:choices/cursor");
 
 	nFiles = dir.listDir("choices/vaccine");
 	dir.sort();
@@ -241,16 +242,29 @@ void ofApp::setup() {
 	if (nFiles) {
 
 		vaccineButton.image.load(dir.getPath(0));
-		vaccineButton.index = 0;
 		vaccineButton.bounds.setFromCenter(0, 0, vaccineButton.image.getWidth(), vaccineButton.image.getHeight());
 		vaccineButton.size = ofPoint(vaccineButton.image.getWidth(), vaccineButton.image.getHeight());
 		virusButton.image.load(dir.getPath(1));
-		virusButton.index = 1;
 		virusButton.bounds.setFromCenter(0, 0, virusButton.image.getWidth(), virusButton.image.getHeight());
-		vaccineButton.size = ofPoint(vaccineButton.image.getWidth(), vaccineButton.image.getHeight());
+		virusButton.size = ofPoint(virusButton.image.getWidth(), virusButton.image.getHeight());
 
 	}
 	else ofLogWarning("shadowpox", "Could not find folder:choices/vaccine");
+
+	nFiles = dir.listDir("choices/buttons");
+	dir.sort();
+	ofLogNotice("shadowpox") << "loading " << nFiles << " button graphics";
+	if (nFiles) {
+
+		backButton.image.load(dir.getPath(0));
+		backButton.bounds.setFromCenter(0, 0, backButton.image.getWidth(), backButton.image.getHeight());
+		backButton.size = ofPoint(backButton.image.getWidth(), backButton.image.getHeight());
+		skipButton.image.load(dir.getPath(1));
+		skipButton.bounds.setFromCenter(0, 0, skipButton.image.getWidth(), skipButton.image.getHeight());
+		skipButton.size = ofPoint(skipButton.image.getWidth(), skipButton.image.getHeight());
+
+	}
+	else ofLogWarning("shadowpox", "Could not find folder:choices/buttons");
 
 	flagOrgSize.x = flags[0].getWidth();
 	flagOrgSize.y = flags[0].getHeight();
@@ -325,6 +339,8 @@ void ofApp::setup() {
 		countriesInRegion.insert(pair<int, vector<countryInfo>>(i, vector<countryInfo>()));
 	}
 
+
+
 	/* Columns
 	0.Region Code int
 	1.Country Number  int
@@ -347,6 +363,12 @@ void ofApp::setup() {
 			countriesInRegion[row.getInt(0)].push_back(country);
 		}
 	} else ofLogWarning("shadowpox", "Could not find csv/vax_serverity.csv");
+
+
+	if (! codeData.load("csv/scoreCodes.csv")) {
+		ofLogWarning("shadowpox", "Could not find csv/scoreCodes.csv");
+	}
+	
 
 	fileName = "d:/" + ofGetTimestampString("%Y-%m-%d-%H-%M") + "shadowpox.csv";
 
@@ -387,8 +409,6 @@ void ofApp::update() {
 	this->kinect.update();
 
 	//if (gui->openingSeq) currentState = sequenceMode::COUNTRYCHOICE;
-
-
 
 	switch (currentState) {
 	case sequenceMode::SCREENSAVER: {
@@ -434,8 +454,8 @@ void ofApp::update() {
 		textAlignFlag |= ofxTextAlign::HORIZONTAL_ALIGN_CENTER;
 		textAlignFlag |= ofxTextAlign::VERTICAL_ALIGN_TOP;
 
-
 		if (!MANUAL_SELECTION) {
+
 			if (kinect.isFrameNew()) {
 				auto bodies = kinect.getBodySource()->getBodies();
 				const auto & bonesDictionary = ofxKinectForWindows2::Data::Body::getBonesAtlas();
@@ -448,26 +468,23 @@ void ofApp::update() {
 					if (body.tracked) {
 						numOfBodiesTracked++;
 						rightHand.pos = projector.getScreenCoordinateOfWorldPosition(body.joints[JointType_HandTipRight].getPosition());
-						rightHand.prevHandState = rightHand.currentHandState;
-
-						if (body.rightHandState == HandState::HandState_Closed || body.rightHandState == HandState::HandState_Open)
-							rightHand.currentHandState = body.rightHandState;
-
-						if (rightHand.prevHandState == rightHand.currentHandState) {
-							rightHand.HandStateCounter++;
-						}
-						else { rightHand.HandStateCounter = 0; }
-
+						leftHand.pos = projector.getScreenCoordinateOfWorldPosition(body.joints[JointType_HandTipLeft].getPosition());
 						break;
 					}
 				}
 				projector.endAsCamera();
-			}
-			drawHuman(FIGURE_COLOR_TRANSITION);
 
+				if (numOfBodiesTracked == 0) { 
+					rightHand.pos = ofPoint(0, 0); 
+					leftHand.pos = ofPoint(0, 0);
+				}
+			}
+			drawHuman(FIGURE_COLOR_TRANSITION, true);
+		
 			if (selectedCountry == nullptr && selectedRegion == nullptr) {
 				chooseRegion = true;
 				countrySelect = false;
+			
 			}
 
 			//pick a region
@@ -476,9 +493,12 @@ void ofApp::update() {
 				displayText = "Please choose your region";
 
 				for (int i = 0; i < boundaries.size(); i++) {
-				
 					if (boundaries[i].inside(rightHand.pos)) {
+
+						pastRegSel = regSel;
 						regSel = i;
+						if (rightHand.HandStateCounter ==0)
+						rightHand.HandStateCounter = now;
 						break;
 					}
 					else {
@@ -486,11 +506,15 @@ void ofApp::update() {
 					}
 				}
 			
-				if (regSel != -1) {
+				if (regSel == -1 || regSel != pastRegSel) {
+					rightHand.HandStateCounter = 0;
+				}
+
+				if (regSel != -1 && rightHand.HandStateCounter>0) {
 					displayRegion = &regions[regSel];
 
 					// check if its been confirmed
-					if (false) {
+					if (now -rightHand.HandStateCounter > handPointerStateCounterThres) {
 						chooseRegion = false;
 						selectedRegion = &countriesInRegion.at(regSel);
 
@@ -507,7 +531,6 @@ void ofApp::update() {
 
 			}
 		
-			
 			else if (countrySelect) {
 
 				displayText = "Please select your Country";
@@ -554,7 +577,7 @@ void ofApp::update() {
 		}
 		else {
 			ofShowCursor();
-			drawHuman(FIGURE_COLOR_TRANSITION);
+			drawHuman(FIGURE_COLOR_TRANSITION,true);
 			if (selectedCountry == nullptr && selectedRegion == nullptr) {
 				chooseRegion = true;
 				countrySelect = false;
@@ -592,6 +615,18 @@ void ofApp::update() {
 				}
 			}
 			else if (countrySelect) {
+
+
+				// DISPLAY BACK BUTTON
+
+				/*if (backButton.bounds.inside(mouseX, mouseY)) {
+					if (ofGetMousePressed() && (now - transitionTimer > 2)) {
+						selectedRegion = nullptr;
+						chooseRegion = true;
+						countrySelect = false;
+					}
+				} */
+
 
 				displayText = "Please select your Country";
 				for (unsigned n = 0; n < selectedRegion->size(); n++) {
@@ -640,7 +675,7 @@ void ofApp::update() {
 	case sequenceMode::VACCINECHOICE: {
 
 		ofShowCursor();
-		drawHuman(FIGURE_COLOR_TRANSITION);
+		drawHuman(FIGURE_COLOR_TRANSITION,true);
 		// CHOICE
 		// show choice
 		if (choiceSeqVaccine == 0) {
@@ -942,26 +977,6 @@ void ofApp::update() {
 //--------------------------------------------------------------
 void ofApp::draw() {
 
-
-	/*if (numOfBodiesTracked > 1) {
-		// too many people tracked!
-
-		// center the text
-		textAlignFlag = 0;
-		textAlignFlag |= ofxTextAlign::HORIZONTAL_ALIGN_CENTER;
-		textAlignFlag |= ofxTextAlign::VERTICAL_ALIGN_MIDDLE;
-
-
-		glPushMatrix();
-		glTranslatef(ofGetWidth() / 2, ofGetHeight() / 2, 0);
-		glScalef((gui->flipText) ? -1.0f : 1.0f, 1.0f, 1.0f); // mirror the text
-
-		text.draw(warningText, 0, 0, textAlignFlag);
-
-		glPopMatrix();
-	}
-	else {  */
-
 		switch (currentState) {
 		case sequenceMode::SCREENSAVER: {
 			screenSaverPlayer.draw(0, 0, ofGetWidth(), ofGetHeight());
@@ -973,7 +988,6 @@ void ofApp::draw() {
 		}
 		case sequenceMode::COUNTRYCHOICE:
 		{
-
 			ofEnableAlphaBlending();
 			ofSetColor(255, 255, 255, 255);
 
@@ -995,12 +1009,14 @@ void ofApp::draw() {
 
 				ofPushStyle();
 				ofSetColor(225);
+
+
 				if (regSel != -1) {
 					displayRegion->draw(mouseX, mouseY,
 						displayRegion->getWidth(),
 						displayRegion->getHeight());
-
 				}
+
 				ofPopStyle();
 			}
 			else if (selectedRegion != nullptr && countrySelect) {
@@ -1011,10 +1027,10 @@ void ofApp::draw() {
 						ofPushStyle();
 						if (i == selectedCountryInRegion) {
 							ofSetColor(255);
-							selectedRegion->at(i).bounds.setSize(flagOrgSize.x*1.1, flagOrgSize.y*1.1);
+							selectedRegion->at(i).bounds.setSize(flagOrgSize.x*1.125, flagOrgSize.y*1.125);
 						}
 						else {
-							ofSetColor(150);
+							ofSetColor(125);
 							selectedRegion->at(i).bounds.setSize(flagOrgSize.x, flagOrgSize.y);
 						}
 						selectedRegion->at(i).flagImage->draw(selectedRegion->at(i).bounds);
@@ -1022,7 +1038,7 @@ void ofApp::draw() {
 					}
 				}
 
-
+				
 				ofSetColor(255, 255, 255, 255);
 				glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA); // set blending mode
 
@@ -1288,7 +1304,7 @@ void ofApp::pointsOnCirleFromLine(ofPoint p1, ofPoint p2, float r, ofPoint& p3, 
 	p6 = p2 - v;
 }
 
-void ofApp::drawHuman(int fig_color) {
+void ofApp::drawHuman(int fig_color, bool showCursor) {
 
 	if (kinect.isFrameNew()) {
 		auto bodies = kinect.getBodySource()->getBodies();
@@ -1373,19 +1389,16 @@ void ofApp::drawHuman(int fig_color) {
 					p1 = projector.getScreenCoordinateOfWorldPosition(body.joints[JointType_Neck].getPosition());
 					p2 = projector.getScreenCoordinateOfWorldPosition(body.joints[JointType_SpineBase].getPosition());
 
-
 					patients[body.bodyId].bounds1 = p1;
 					patients[body.bodyId].bounds2 = p2;
 					if (gui->skeleton) {
 						ofDrawLine(body.joints[bone.first].getPosition(), body.joints[bone.second].getPosition());
 					}
-					jointsInScreenPos[bone.first] = projector.getScreenCoordinateOfWorldPosition(body.joints[bone.first].getPosition());
-					jointsInScreenPos[bone.second] = projector.getScreenCoordinateOfWorldPosition(body.joints[bone.second].getPosition());
-
+					
 				}
 
-
 				ofPopStyle();
+				
 				ofPushStyle();
 
 				ofVec3f diff = body.joints[JointType_ShoulderLeft].getPosition() - body.joints[JointType_ShoulderRight].getPosition();
@@ -1562,6 +1575,17 @@ void ofApp::drawHuman(int fig_color) {
 				ofDrawCircle(body.joints[JointType_AnkleLeft].getPosition(), radiusJoint);
 				ofDrawCircle(body.joints[JointType_AnkleRight].getPosition(), radiusJoint);
 				ofPopStyle();
+
+
+				if (showCursor){
+					ofPushStyle();
+					ofSetColor(255);
+
+					leftHand.cursor.draw(patients[body.bodyId].handL);
+					rightHand.cursor.draw(patients[body.bodyId].handR);
+					ofPopStyle();
+				}
+				
 			}
 		}
 		this->projector.endAsCamera();
