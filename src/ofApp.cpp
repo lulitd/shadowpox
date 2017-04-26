@@ -806,7 +806,7 @@ void ofApp::update() {
 	}
 	case sequenceMode::GAMEPLAY: {
 		ofHideCursor();
-		if (now - gameTimer < 30 * gui->gamePlayLength)
+		if (now - gameTimer < 15 * gui->gamePlayLength)
 		{
 			// timer
 			for (int k = 0; k < figures.size(); k++) {
@@ -833,11 +833,11 @@ void ofApp::update() {
 					patients[i].detectionRange = gui->detectionRange;
 					patients[i].update();
 
-					if ((now - spawnTimer) >= (1000.0f / (float)gui->buddingSpeed) && patients[i].cluster.size() < gui->maxCount) {
+					if ((ofGetElapsedTimef() - spawnTimer) >= (1000.0f / (float)gui->buddingSpeed)*0.001f && patients[i].cluster.size() < gui->maxCount) {
 
-						patients[i].addCellCluster(3, p1, p2);
-						spawnTimer = ofGetElapsedTimeMillis();
-						if (patients[i].cluster.size()) {
+						patients[i].addCellCluster(1, p1, p2);
+						spawnTimer = ofGetElapsedTimef();
+						//if (patients[i].cluster.size()) {
 							//ofLogNotice("shadowpox") << ofToString(patients[i].cluster.size());
 
 							for (int j = 0; j < patients[i].cluster.size(); j++) {
@@ -852,13 +852,13 @@ void ofApp::update() {
 								else { continue; }
 							}
 						}
-					}
+					//}
 				}
 
 				// if not clear the pox of that patient, only if it hasn't been cleared already
 				else {
 					if (patients[i].cluster.size()) {
-						patients[i].clear();
+						patients[i].cluster.clear();
 					}
 				}
 			}
@@ -1072,9 +1072,6 @@ void ofApp::draw() {
 
 					vaccineButton.image.draw(vaccineButton.bounds);
 					virusButton.image.draw(virusButton.bounds);
-
-
-
 				}
 				else if (choiceSeqVaccine == 2) {
 
@@ -1223,21 +1220,6 @@ void ofApp::mousePressed(int x, int y, int button) {
 
 //--------------------------------------------------------------
 void ofApp::mouseReleased(int x, int y, int button) {
-	// makes sure we don't go over limit.
-	if (button == OF_MOUSE_BUTTON_LEFT) {
-		if (patients[selected].cluster.size() < this->patients[selected].maxCells) {
-		//	patients[selected].addCell(ofVec2f(x, y));
-		}
-	}
-
-	if (button == OF_MOUSE_BUTTON_RIGHT) {
-		for (cellCluster pox : patients) {
-			if (pox.cluster.size()) {
-				pox.cluster.clear();
-			}
-		}
-	}
-
 }
 
 //--------------------------------------------------------------
@@ -1284,7 +1266,7 @@ void ofApp::SaveData() {
 
 	// d/m/y h:m:s
 	//data.addString(ofGetTimestampString("%Y-%m-%d-%H-%M-%S-%i"));
-	data.addString(ofGetTimestampString("%d/%m/%Y %H:%M:%S"));
+	data.addString(ofGetTimestampString("%Y-%m-%d %H:%M:%S"));
 	data.addString(sourceData[(selectedCountry->index) + 1].getString(sourceCol::COUNTRY));
 	data.addString((isVaccine) ? "Yes" : "No");
 	data.addInt(infectionScore);
@@ -1577,7 +1559,6 @@ void ofApp::drawHuman(int fig_color) {
 				limb08.draw();
 				ofSetColor(fig_color, 255);
 
-
 				ofDrawCircle(body.joints[JointType_AnkleLeft].getPosition(), radiusJoint);
 				ofDrawCircle(body.joints[JointType_AnkleRight].getPosition(), radiusJoint);
 				ofPopStyle();
@@ -1585,7 +1566,6 @@ void ofApp::drawHuman(int fig_color) {
 		}
 		this->projector.endAsCamera();
 		this->skeletonFBO.end();
-
 
 	}
 

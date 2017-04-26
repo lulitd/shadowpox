@@ -15,35 +15,15 @@ int main( ){
 
 
 	ofGLFWWindowSettings settings;
-<<<<<<< HEAD
 
-	if (count>1) {
-		int xM; int yM;
-		glfwGetMonitorPos(monitors[1], &xM, &yM); // We take the second monitor
-		const GLFWvidmode * desktopMode = glfwGetVideoMode(monitors[1]);
 
-		settings.width = desktopMode->width;
-		settings.height = desktopMode->height;
-		settings.setPosition(ofVec2f(xM, yM));
-
-	}
-	else {
-		settings.width = 1280;
-		settings.height = 768;
-		settings.resizable = true;
-		settings.decorated = false;
-		settings.setPosition(ofVec2f(0, 0));
-		settings.monitor = 1;
-
-	}
-=======
 	settings.width = 1280;
 	settings.height = 768;
 	settings.resizable = true;
 	settings.decorated = false;
 	settings.setPosition(ofVec2f(0,0));
 	settings.monitor = 1;
->>>>>>> parent of 39a675e... automate fullscreen on second monitor if monitor is detected
+	
 	shared_ptr<ofAppBaseWindow> mainWindow = ofCreateWindow(settings);
 
 	
