@@ -43,6 +43,7 @@ public:
 	ofParameter <bool>	spawn;
 	ofParameter <bool>	skeleton;
 	ofParameter <int>   handSensitivity;
+	ofParameter <bool>  manualSelection; 
 
 	ofxPanel gui;
 

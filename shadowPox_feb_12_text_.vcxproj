@@ -213,6 +213,7 @@
     <ClCompile Include="..\..\..\addons\ofxSvg\libs\svgTiny\src\svgtiny_list.cpp" />
     <ClCompile Include="..\..\..\addons\ofxTextAlign\src\ofxTextAlign.cpp" />
     <ClCompile Include="..\..\..\addons\ofxTextAlign\src\ofxTextAlignTTF.cpp" />
+    <ClCompile Include="src\poxemon.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="IntroText.h" />
@@ -414,6 +415,7 @@
     <ClInclude Include="..\..\..\addons\ofxSvg\libs\svgTiny\src\svgtiny_internal.h" />
     <ClInclude Include="..\..\..\addons\ofxTextAlign\src\ofxTextAlign.h" />
     <ClInclude Include="..\..\..\addons\ofxTextAlign\src\ofxTextAlignTTF.h" />
+    <ClInclude Include="src\poxemon.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="$(OF_ROOT)\libs\openFrameworksCompiled\project\vs\openframeworksLib.vcxproj">

@@ -6,10 +6,11 @@ void GuiApp::setup(){
 	gui.setDefaultWidth(GUIWIDTH);
 
 	CVParam.setName("Game Parameters");
+	CVParam.add(manualSelection.set("Manual Selection",true));
 	CVParam.add(sweeping.set("Hand Sweeping", true));
 	CVParam.add(handSensitivity.set("Hand Sensitivity", 15, 0, 100));
 	CVParam.add(detectionRange.set("Detection Range", 20, 10, 500));
-	CVParam.add(gamePlayLength.set("Game Play Length (x30Secs)", 3, 1, 120));
+	CVParam.add(gamePlayLength.set("Game Play Length (x15Secs)", 3, 1, 120));
 	CVParam.add(skipIntroText.set("Skip Intro Text", false));
 	CVParam.add(skipScreenSaver.set("Skip screensaver", false));
 	CVParam.add(flipText.set("Mirror Text", true));

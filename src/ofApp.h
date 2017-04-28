@@ -12,6 +12,8 @@
 #include "miniFigs.h"
 #include "ofxTextAlignTTF.h"
 #include "ofxCSV.h"
+#include "poxemon.h"
+
 //#include "country.h"
 class ofApp : public ofBaseApp {
 
@@ -126,6 +128,7 @@ public:
 	ofxCsv codeData; 
 	//ofxCsvRow selectedCountry;
 
+	bool displaySkipButton = false; 
 	int regSel = -1;
 	int pastRegSel = -1;
 	
@@ -172,5 +175,7 @@ private:
 	int numOfBodiesTracked = 0; 
 
 	int textAlignmentX = 0; 
+	// Default code to pass into poxemon code function.
+	char code[] = "???";
 };
 	
