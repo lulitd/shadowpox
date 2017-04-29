@@ -155,9 +155,9 @@ void cell::draw() {
 					ofDrawCircle(0, 0, radius);
 					ofPopMatrix(); */
 				}
-			//	else {
-					//ofDrawCircle(pos.x, pos.y, radius);
-			//	}
+				else {
+					ofDrawCircle(pos.x, pos.y, radius);
+				}
 			}
 
 			else {

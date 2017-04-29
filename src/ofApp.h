@@ -125,10 +125,10 @@ public:
 
 	ofxCsv sourceData;
 	ofxCsv logData;
-	ofxCsv codeData; 
 	//ofxCsvRow selectedCountry;
 
 	bool displaySkipButton = false; 
+	bool displayBackButton = false; 
 	int regSel = -1;
 	int pastRegSel = -1;
 	
@@ -158,7 +158,9 @@ private:
 		ofImage image;
 		int index;
 		ofPoint size;
-	} vaccineButton, virusButton, backButton,skipButton;
+		bool event = true; 
+		float timeStamp;
+	} vaccineButton, virusButton, backButton,backButtonAlt,skipButton;
 
 	int choiceSeqVaccine = -1;
 
@@ -176,6 +178,6 @@ private:
 
 	int textAlignmentX = 0; 
 	// Default code to pass into poxemon code function.
-	char code[] = "???";
+	char code[4] = "???";
 };
 	

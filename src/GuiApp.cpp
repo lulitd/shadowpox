@@ -6,7 +6,7 @@ void GuiApp::setup(){
 	gui.setDefaultWidth(GUIWIDTH);
 
 	CVParam.setName("Game Parameters");
-	CVParam.add(manualSelection.set("Manual Selection",true));
+	CVParam.add(manualSelection.set("Mouse Selection",true));
 	CVParam.add(sweeping.set("Hand Sweeping", true));
 	CVParam.add(handSensitivity.set("Hand Sensitivity", 15, 0, 100));
 	CVParam.add(detectionRange.set("Detection Range", 20, 10, 500));
