@@ -89,7 +89,7 @@ public:
 
 	} rightHand,leftHand;
 
-	int handPointerStateCounterThres = 3;
+	int handPointerStateCounterThres = 2;
 	countryInfo* selectedCountry = nullptr;
 
 	bool chooseRegion = false;

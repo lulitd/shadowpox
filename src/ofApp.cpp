@@ -202,7 +202,7 @@ void ofApp::setup() {
 		for (int i = 0; i < dir.numFiles(); i++) {
 			ofImage r;
 			r.load(dir.getPath(i));
-			r.setAnchorPoint(r.getWidth() / 2, r.getHeight() / 2);
+			r.setAnchorPercent(0.5,0.5);
 			regions.push_back(r);
 		}
 	}
@@ -393,8 +393,7 @@ void ofApp::setup() {
 
 
 	currentState = sequenceMode::SCREENSAVER;
-
-
+	displaySkipButton = true;
 
 }
 
@@ -443,8 +442,8 @@ void ofApp::update() {
 			projector.endAsCamera();
 
 			if (numOfBodiesTracked == 0) {
-				rightHand.pos = ofPoint(0, 0);
-				leftHand.pos = ofPoint(0, 0);
+				rightHand.pos = ofPoint(-5000, 0);
+				leftHand.pos = ofPoint(-5000, 0);
 			}
 		}
 	}
@@ -479,6 +478,40 @@ void ofApp::update() {
 	case sequenceMode::INTRO: {
 		ofHideCursor();
 		introTextPlayer.update();
+
+		drawHuman(FIGURE_COLOR_TRANSITION, true);
+		if (displaySkipButton) {
+			if (gui->manualSelection) {
+				if (skipButton.bounds.inside(mouseX, mouseY) && ofGetMousePressed()) {
+					currentState = sequenceMode::COUNTRYCHOICE;
+					introTextPlayer.stop();// stop INTRO
+					displaySkipButton = false;
+					transitionTimer = now;
+					return;
+				}
+			}
+			else {
+
+				if (skipButton.bounds.inside(rightHand.pos)) {
+					skipButton.event = true;
+					if (skipButton.timeStamp == 0)
+						skipButton.timeStamp = now;
+				}
+				else {
+					skipButton.event = false;
+					skipButton.timeStamp = 0;
+				}
+
+				if (skipButton.event && now - skipButton.timeStamp>2) {
+					currentState = sequenceMode::COUNTRYCHOICE;
+					introTextPlayer.stop();// stop INTRO
+					displaySkipButton = false;
+					transitionTimer = now;
+					return;
+				}
+
+			}
+		}
 		if (introTextPlayer.getIsMovieDone() || gui->skipIntroText) {
 			currentState = sequenceMode::COUNTRYCHOICE;
 			introTextPlayer.stop();// stop INTRO
@@ -487,13 +520,13 @@ void ofApp::update() {
 		break;
 	}
 	case sequenceMode::COUNTRYCHOICE: {
+		displaySkipButton = false;
 
 		textAlignFlag = 0;
 		textAlignFlag |= ofxTextAlign::HORIZONTAL_ALIGN_CENTER;
 		textAlignFlag |= ofxTextAlign::VERTICAL_ALIGN_TOP;
-
 		
-			drawHuman(FIGURE_COLOR_TRANSITION, true);
+		drawHuman(FIGURE_COLOR_TRANSITION, true);
 		if (!gui->manualSelection){
 			if (selectedCountry == nullptr && selectedRegion == nullptr) {
 				chooseRegion = true;
@@ -503,6 +536,8 @@ void ofApp::update() {
 			
 			//pick a region
 			if (chooseRegion || selectedRegion == nullptr) {
+
+
 				displayBackButton = false;
 				displayText = "Please choose your region";
 
@@ -646,7 +681,7 @@ void ofApp::update() {
 			// show regions
 			if (chooseRegion || selectedRegion == nullptr) {
 
-			regionSelectionManual:
+				regionSelectionManual:
 				displayText = "Please choose your region";
 
 				for (int i = 0; i < boundaries.size(); i++) {
@@ -660,8 +695,8 @@ void ofApp::update() {
 
 				if (regSel != -1) {
 					displayRegion = &regions[regSel];
-
-					if (ofGetMousePressed()) {
+					
+					if (ofGetMousePressed() && now - transitionTimer> 2) {
 						chooseRegion = false;
 						selectedRegion = &countriesInRegion.at(regSel);
 
@@ -1140,14 +1175,19 @@ void ofApp::update() {
 			}*/
 
 			poxencode(isVaccine, infectionScore, miniFig::getDeathScore(), code);
-			displayText = (isVaccine) ?
-				"To meet the people\n in your\n Protection Collection,\n visit : \n \n www.shadowpox.org/p/":
-				"To meet the people\n in your\n Infection Collection,\n visit : \n \n www.shadowpox.org/p/";
+
+			displayText = "Your web code is:\n \n";
 
 			displayText += code;
-			displayText += ".html";
 
-				if (now - transitionTimer > 12) {
+			displayText += "\n \n Write your code in the blank on the card, and visit \n \n";
+			displayText += "shadowpox.org /";
+			displayText += code;
+			displayText += "\n \n to meet the people in your \n";
+			displayText += (isVaccine) ? "Protection ": "Infection ";
+			displayText += "Collection.";
+
+				if (now - transitionTimer > 20) {
 				endDialog = 3;
 				transitionTimer = now;
 			}
@@ -1164,6 +1204,7 @@ void ofApp::update() {
 			scoreCalculated = false;
 			// after a certain amount of time
 			currentState = sequenceMode::SCREENSAVER;
+			displaySkipButton = true;
 			miniFig::resetDeathScore();
 
 			textAlignFlag = 0;
@@ -1180,7 +1221,7 @@ void ofApp::update() {
 
 //--------------------------------------------------------------
 void ofApp::draw() {
-
+	
 		switch (currentState) {
 		case sequenceMode::SCREENSAVER: {
 			screenSaverPlayer.draw(0, 0, ofGetWidth(), ofGetHeight());
@@ -1188,10 +1229,25 @@ void ofApp::draw() {
 		}
 		case sequenceMode::INTRO: {
 			introTextPlayer.draw(0, 0, ofGetWidth(), ofGetHeight());
+
+			rightHand.cursor.draw(rightHand.pos);
+
+				if (displaySkipButton) {
+					if (skipButton.event)skipButton.bounds.setSize(skipButton.size.x*1.05, skipButton.size.y*1.05);
+					else {
+						skipButton.bounds.setSize(skipButton.size.x, skipButton.size.y);
+					}
+					skipButton.image.draw(skipButton.bounds);
+				}
+		
 			break;
 		}
 		case sequenceMode::COUNTRYCHOICE:
 		{
+			if (numOfBodiesTracked > 1) {
+				text.draw(warningText, ofGetScreenWidth()/2, ofGetScreenHeight() / 2, textAlignFlag);
+			}
+			else {
 			ofEnableAlphaBlending();
 			ofSetColor(255, 255, 255, 255);
 
@@ -1218,25 +1274,31 @@ void ofApp::draw() {
 				if (regSel != -1) {
 
 					if (!gui->manualSelection) {
-						displayRegion->draw(rightHand.pos,
+						displayRegion->draw(
+							boundaries[regSel].getCentroid2D(),
 							displayRegion->getWidth(),
 							displayRegion->getHeight());
-					
+
+
+						rightHand.cursor.draw(rightHand.pos);
+
 					}
 					else {
-						displayRegion->draw(mouseX, mouseY,
+						displayRegion->draw(
+							boundaries[regSel].getCentroid2D(),
 							displayRegion->getWidth(),
 							displayRegion->getHeight());
 					}
-			
+
+
 				}
 
 				ofPopStyle();
 			}
 			else if (selectedRegion != nullptr && countrySelect) {
 
-				
-				
+
+
 				ofSetColor(255, 255, 255, 255);
 				glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA); // set blending mode
 
@@ -1261,7 +1323,7 @@ void ofApp::draw() {
 					}
 					backButtonAlt.image.draw(backButtonAlt.bounds);
 
-					
+
 				}
 				if (regSel != -1) {
 
@@ -1281,13 +1343,17 @@ void ofApp::draw() {
 				}
 
 
-
+				if (!gui->manualSelection)
+					rightHand.cursor.draw(rightHand.pos);
 			}
-
+		}
 			break;
 		}
 		case sequenceMode::VACCINECHOICE: {
-
+			if (numOfBodiesTracked > 1) {
+					text.draw(warningText, ofGetScreenWidth() / 2, ofGetScreenHeight() / 2, textAlignFlag);
+			}
+			else {
 				ofEnableAlphaBlending();
 				ofSetColor(255, 255, 255, 255);
 
@@ -1316,6 +1382,8 @@ void ofApp::draw() {
 					}
 					skipButton.image.draw(skipButton.bounds);
 				}
+
+
 				if (choiceSeqVaccine == 0) {
 
 					glPushMatrix();
@@ -1357,6 +1425,11 @@ void ofApp::draw() {
 
 				}
 
+
+				if (!gui->manualSelection && (displayBackButton || displaySkipButton)) {
+					rightHand.cursor.draw(rightHand.pos);
+				}
+			}
 			break;
 		}
 		case sequenceMode::GAMEPLAY: {
@@ -1408,9 +1481,10 @@ void ofApp::draw() {
 			break;
 		}
 		}
-	//}
+	}
 
-}
+
+
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
@@ -1822,15 +1896,15 @@ void ofApp::drawHuman(int fig_color, bool showCursor) {
 				ofPopStyle();
 
 
-				/* if (showCursor){
+				if (showCursor) {
 					ofPushStyle();
 					ofSetColor(255);
 
-					leftHand.cursor.draw(patients[body.bodyId].handL);
-					rightHand.cursor.draw(patients[body.bodyId].handR);
+					leftHand.cursor.draw(body.joints[JointType_HandTipLeft].getPosition());
+					rightHand.cursor.draw(body.joints[JointType_HandTipRight].getPosition());
 					ofPopStyle();
-				} */
-				
+				}
+
 			}
 		}
 		this->projector.endAsCamera();
