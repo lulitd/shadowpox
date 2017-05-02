@@ -1,0 +1,33 @@
+Calibrating with Rulr(v0.5a) using the Kinect V2:
+
+Before opening Rulr:
+-Install Kinect SDK 
+-ASIO4ALL Audio driver 
+
+Before calibrating with Rulr, place the kinect and the projector frimly in position. If the devices are moved from their positions, they will have to once again be re-calibrated.
+
+Ensure that both the projector and the kinect are plugged into and detected by the computer.
+
+Projector: Check display settings
+Kinect:  Check Device manager for Kinect sensor devices
+
+Open Rulr: 
+
+
+Rulr has three main panels:
+
+Patch(Top):
+The patch panel contains Nodes 
+
+World(Bottom):
+The world panel is a virtual representation of the physical setup.
+
+Inspector(Right):
+The inspector allows you to change the properties of the currently selected node. Some nodes have many settings whilst some have none at all.
+
+
+
+
+
+
+
