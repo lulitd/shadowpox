@@ -49,8 +49,8 @@ public:
 	float distanceY= 20;
 	ofVec2f pos;
 
-	ofVec2f bounds1;
-	ofVec2f bounds2;
+	ofVec2f p1;
+	ofVec2f p2;
 
 	ofVec2f d1;
 	ofVec2f d2;

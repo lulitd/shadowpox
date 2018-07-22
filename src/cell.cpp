@@ -49,7 +49,7 @@ void cell::update() {
 	// check for the intersection of the two lines joint1 in the direction of d1 
 	//  and joint 2 and the direction of d2 
 	// TODO: FIX CHECK THE ANGLES FIRST  FOR 180s, unwanted behaviour at those spec
-	if (ofLineSegmentIntersection(bounds1,bounds1+(d1*5000), bounds2,bounds2+(d2*5000), p)) {
+	if (ofLineSegmentIntersection(p1,p1+(d1*5000), p2,p2+(d2*5000), p)) {
 		pos.x = p.x; /// the position is their intersection!
 		pos.y = p.y;
 	}
@@ -81,24 +81,38 @@ void cell::update() {
 	}
 
 	if (isTargeted) {
-		float d = ofDist(bounds1.x, bounds1.y, bounds2.x, bounds2.y);
-		ofVec2f m = (bounds1 + bounds2) / 2; // must do it this way! don't use .middle
-		float l = (ofDist(m.x, m.y, pos.x, pos.y));
-		isDying = (l > d) && (( (pos.x > max(bounds2.x, bounds1.x) + (ofGetWidth()*0.05) || pos.x < min(bounds2.x, bounds1.x) - (ofGetWidth()*0.05))));
+		// calculate the distance between the two joint points. 
+		//The Neck and the base of the spine.  
+		float distance = ofDist(p1.x, p1.y, p2.x, p2.y);
+
+		// find the middle point between the two joint points.
+		ofVec2f middle = (p1 + p2) / 2; 
+
+		//calculate the the pox's distance from the midPoint; 
+		float poxDistanceFromMid = 
+			(ofDist(middle.x, middle.y, pos.x, pos.y));
+
+		/*The pox is dying if:
+		*1.the pox is too far trom the middle point and
+		*2.the pox is lies outside two joints x position
+		   (with a 5% of the screen as buffer).
+		*/
+		isDying = (poxDistanceFromMid > distance) && 
+			(( (pos.x > max(p2.x, p1.x) + (ofGetWidth()*0.05) || pos.x < min(p2.x, p1.x) - (ofGetWidth()*0.05))));
 	}
-		// is it being targeted?
+	
+	// has the pox left the body
 	if (isDying) {
 		targetTimer += ofGetLastFrameTime();
 	} // life
 	isDefeated = (targetTimer >= poxHealth);
 	
 	if (!isDefeated && !isDying){
-	isDefeated=(pos.y <= min(bounds1.y,bounds2.y)-(ofGetHeight()*0.15))  || (pos.y >= ofGetHeight()*0.8 || radius== 0);
+	isDefeated=(pos.y <= min(p1.y,p2.y)-(ofGetHeight()*0.15))  || (pos.y >= ofGetHeight()*0.8 || radius== 0);
 	}
 
-
-	d1 = pos - bounds1; // direction vector with distance between joint1 and the cell's position
-	d2 = pos - bounds2; // direction vector with distance between joint2 and the cell's position 
+	d1 = pos - p1; // direction vector with distance between joint1 and the cell's position
+	d2 = pos - p2; // direction vector with distance between joint2 and the cell's position 
 	d1.normalize();
 	d2.normalize();
 

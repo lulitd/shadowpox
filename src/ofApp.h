@@ -43,6 +43,8 @@ public:
 	ofPath polyBody;
 
 	ofxTextAlignTTF text;
+
+	ofxTextAlignTTF largeText;
 	ofxKFW2::Device kinect;
 	ofxRay::Camera projector;
 	float gameTimer = 0;
@@ -57,6 +59,8 @@ public:
 	std::vector<ofImage> regions;
 	std::vector<ofImage> flags;
 	std::vector<ofImage> hands;
+
+	ofPoint regionCenter[11];
 	struct countryInfo {
 		int index;
 		ofImage* flagImage = nullptr;
@@ -111,6 +115,8 @@ public:
 
 	ofVideoPlayer screenSaverPlayer;
 	ofVideoPlayer introTextPlayer;
+
+	ofVideoPlayer demoPushPlayer;
 	ofFbo skeletonFBO;
 
 	enum class sequenceMode {
@@ -160,7 +166,7 @@ private:
 		ofPoint size;
 		bool event = true; 
 		float timeStamp;
-	} vaccineButton, virusButton, backButton,backButtonAlt,skipButton;
+	} vaccineButton, virusButton, backButton,backButtonAlt,skipButton,playAgainButton;
 
 	int choiceSeqVaccine = -1;
 
@@ -175,6 +181,7 @@ private:
 	bool scoreCalculated = false; 
 	bool prevFlipTextStatus = false;
 	int numOfBodiesTracked = 0; 
+	bool displayDemoVid = false; 
 
 	int textAlignmentX = 0; 
 	// Default code to pass into poxemon code function.

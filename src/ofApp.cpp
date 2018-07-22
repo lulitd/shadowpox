@@ -17,6 +17,8 @@
 //--------------------------------------------------------------
 void ofApp::setup() {
 	text.load("font/euro.ttf", 55, true, true, false, false, 72);
+	text.setLetterSpacing(1.1f);
+
 	textAlignFlag |= ofxTextAlign::HORIZONTAL_ALIGN_CENTER;
 	textAlignFlag |= ofxTextAlign::VERTICAL_ALIGN_TOP;
 
@@ -267,6 +269,11 @@ void ofApp::setup() {
 		skipButton.image.load(dir.getPath(2));
 		skipButton.bounds.setFromCenter(0, 0, skipButton.image.getWidth(), skipButton.image.getHeight());
 		skipButton.size = ofPoint(skipButton.image.getWidth(), skipButton.image.getHeight());
+
+
+		playAgainButton.image.load(dir.getPath(3));
+		playAgainButton.bounds.setFromCenter(0, 0, playAgainButton.image.getWidth(), playAgainButton.image.getHeight());
+		playAgainButton.size = ofPoint(playAgainButton.image.getWidth(), playAgainButton.image.getHeight());
 	}
 	else ofLogWarning("shadowpox", "Could not find folder:choices/buttons");
 
@@ -280,6 +287,10 @@ void ofApp::setup() {
 	screenSaverPlayer.play();
 	introTextPlayer.load("clip/intro_text.mp4");
 	introTextPlayer.setLoopState(ofLoopType::OF_LOOP_NONE);
+
+	demoPushPlayer.load("clip/demo_pox.mp4");
+	demoPushPlayer.setLoopState(ofLoopType::OF_LOOP_NORMAL);
+
 
 	patients.reserve(6); // maximum skeleton tracking of kinect
 
@@ -348,7 +359,22 @@ void ofApp::setup() {
 	for (int i = 0; i < 11; i++) {
 		// region index and array of country infor
 		countriesInRegion.insert(pair<int, vector<countryInfo>>(i, vector<countryInfo>()));
+	
 	}
+
+
+	regionCenter[0] = ofPoint(937,711); // central africa
+	regionCenter[1] = ofPoint(846,782);// south eastern africa
+	regionCenter[2] = ofPoint(976,576);// nothern africa
+	regionCenter[3] = ofPoint(622,520);// southern asia
+	regionCenter[4] = ofPoint(347,747);// asia pacific
+	regionCenter[5] = ofPoint(784,527);// middle east
+	regionCenter[6] = ofPoint(459,457);// eastern asia
+	regionCenter[7] = ofPoint(1344,772);// south america
+	regionCenter[8] = ofPoint(802,364);// eastern europe
+	regionCenter[9] = ofPoint(1486,426);// north america
+	regionCenter[10] = ofPoint(988,396);// western europe
+
 
 	/* Columns
 	0.Region Code int
@@ -373,10 +399,7 @@ void ofApp::setup() {
 		}
 	} else ofLogWarning("shadowpox", "Could not find csv/vax_serverity.csv");
 
-
-	
-
-	fileName = "d:/" + ofGetTimestampString("%Y-%m-%d-%H-%M") + "shadowpox.csv";
+	fileName = "C:/Users/YORK/Google Drive/Shadowpox-game-data/" + ofGetTimestampString("%Y-%m-%d-%H-%M") + "shadowpox.csv";
 
 	logData.createFile(fileName);
 	ofLogNotice("shadowpox", "file created:"+ fileName);
@@ -404,24 +427,25 @@ void ofApp::update() {
 
 	//HACK to get it to fullscreen on second monitor. window must be positioned on second monitor first, then fullscreen is called.
 
-	if (ofGetFrameNum() == 20   ) {
+	if (ofGetFrameNum() == 20) {
 		ofSetWindowPosition(1920, 0);
 	}
 	if (ofGetFrameNum() == 25) {
 		ofSetFullscreen(true);
-	}
+	} 
 
 	if (ofGetFrameNum() == 30) {
 		backButton.bounds.setPosition(ofGetWidth() - backButton.size.x, ofGetHeight() - backButton.size.y);
-		backButtonAlt.bounds.setPosition(ofGetWidth() - (backButtonAlt.size.x*2), ofGetHeight() - backButtonAlt.size.y - 15);
+		backButtonAlt.bounds.setPosition(ofGetWidth() - (backButtonAlt.size.x * 2), ofGetHeight() - backButtonAlt.size.y - 15);
 
 		skipButton.bounds.setPosition(0, ofGetHeight() - skipButton.size.y);
+		playAgainButton.bounds.setPosition(0, ofGetHeight() - playAgainButton.size.y);
 	}
 	this->kinect.update();
 
 	//if (gui->openingSeq) currentState = sequenceMode::COUNTRYCHOICE;
 
-	if (!gui->manualSelection && currentState!=sequenceMode::GAMEPLAY) {
+	if (!gui->manualSelection && currentState != sequenceMode::GAMEPLAY) {
 
 		if (kinect.isFrameNew()) {
 			auto bodies = kinect.getBodySource()->getBodies();
@@ -447,201 +471,204 @@ void ofApp::update() {
 			}
 		}
 	}
-	switch (currentState) {
-	case sequenceMode::SCREENSAVER: {
-		ofHideCursor();
-		if (!gui->skipScreenSaver){
-		if (!screenSaverPlayer.isPlaying()) screenSaverPlayer.play();
-		if (kinect.isFrameNew()) {
-			auto bodies = kinect.getBodySource()->getBodies();
 
-			const auto & bonesDictionary = ofxKinectForWindows2::Data::Body::getBonesAtlas();
+	if (!(numOfBodiesTracked > 1 && (currentState == sequenceMode::COUNTRYCHOICE || currentState == sequenceMode::VACCINECHOICE))) {
 
-			numOfBodiesTracked = 0;
-			for (auto body : bodies) {
-				if (body.tracked) {
-					numOfBodiesTracked++;
-					currentState = sequenceMode::INTRO;
-					screenSaverPlayer.stop(); // STOP SCREENSAVER!
-					introTextPlayer.play();// PLAY INTRO
-					return;
+		switch (currentState) {
+		case sequenceMode::SCREENSAVER: {
+			ofHideCursor();
+			if (!gui->skipScreenSaver) {
+				if (!screenSaverPlayer.isPlaying()) screenSaverPlayer.play();
+				if (kinect.isFrameNew()) {
+					auto bodies = kinect.getBodySource()->getBodies();
+
+					const auto & bonesDictionary = ofxKinectForWindows2::Data::Body::getBonesAtlas();
+
+					numOfBodiesTracked = 0;
+					for (auto body : bodies) {
+						if (body.tracked) {
+							numOfBodiesTracked++;
+							currentState = sequenceMode::INTRO;
+							screenSaverPlayer.stop(); // STOP SCREENSAVER!
+							introTextPlayer.play();// PLAY INTRO
+							return;
+						}
+					}
 				}
-			}
-		}
-		screenSaverPlayer.update();
-		}
-		else {
-			currentState = (gui->skipIntroText)?sequenceMode::COUNTRYCHOICE : sequenceMode::INTRO;
-			if (screenSaverPlayer.isPlaying())screenSaverPlayer.stop();
-		}
-		break; }
-	case sequenceMode::INTRO: {
-		ofHideCursor();
-		introTextPlayer.update();
-
-		drawHuman(FIGURE_COLOR_TRANSITION, true);
-		if (displaySkipButton) {
-			if (gui->manualSelection) {
-				if (skipButton.bounds.inside(mouseX, mouseY) && ofGetMousePressed()) {
-					currentState = sequenceMode::COUNTRYCHOICE;
-					introTextPlayer.stop();// stop INTRO
-					displaySkipButton = false;
-					transitionTimer = now;
-					return;
-				}
+				screenSaverPlayer.update();
 			}
 			else {
+				currentState = (gui->skipIntroText) ? sequenceMode::COUNTRYCHOICE : sequenceMode::INTRO;
+				if (screenSaverPlayer.isPlaying())screenSaverPlayer.stop();
+			}
+			break; }
+		case sequenceMode::INTRO: {
+			ofHideCursor();
+			introTextPlayer.update();
 
-				if (skipButton.bounds.inside(rightHand.pos)) {
-					skipButton.event = true;
-					if (skipButton.timeStamp == 0)
-						skipButton.timeStamp = now;
+			drawHuman(FIGURE_COLOR_TRANSITION, true);
+			if (displaySkipButton) {
+				if (gui->manualSelection) {
+					if (skipButton.bounds.inside(mouseX, mouseY) && ofGetMousePressed()) {
+						currentState = sequenceMode::COUNTRYCHOICE;
+						introTextPlayer.stop();// stop INTRO
+						displaySkipButton = false;
+						transitionTimer = now;
+						return;
+					}
 				}
 				else {
-					skipButton.event = false;
-					skipButton.timeStamp = 0;
-				}
 
-				if (skipButton.event && now - skipButton.timeStamp>2) {
-					currentState = sequenceMode::COUNTRYCHOICE;
-					introTextPlayer.stop();// stop INTRO
-					displaySkipButton = false;
-					transitionTimer = now;
-					return;
-				}
-
-			}
-		}
-		if (introTextPlayer.getIsMovieDone() || gui->skipIntroText) {
-			currentState = sequenceMode::COUNTRYCHOICE;
-			introTextPlayer.stop();// stop INTRO
-			return;
-		}
-		break;
-	}
-	case sequenceMode::COUNTRYCHOICE: {
-		displaySkipButton = false;
-
-		textAlignFlag = 0;
-		textAlignFlag |= ofxTextAlign::HORIZONTAL_ALIGN_CENTER;
-		textAlignFlag |= ofxTextAlign::VERTICAL_ALIGN_TOP;
-		
-		drawHuman(FIGURE_COLOR_TRANSITION, true);
-		if (!gui->manualSelection){
-			if (selectedCountry == nullptr && selectedRegion == nullptr) {
-				chooseRegion = true;
-				countrySelect = false;
-			}
-
-			
-			//pick a region
-			if (chooseRegion || selectedRegion == nullptr) {
-
-
-				displayBackButton = false;
-				displayText = "Please choose your region";
-
-				pastRegSel = regSel;
-
-				for (int i = 0; i < boundaries.size(); i++) {
-					if (boundaries[i].inside(rightHand.pos)) {
-
-						
-						regSel = i;
-
-						if (rightHand.HandStateCounter==0)
-						rightHand.HandStateCounter = now;
-						break;
+					if (skipButton.bounds.inside(rightHand.pos)) {
+						skipButton.event = true;
+						if (skipButton.timeStamp == 0)
+							skipButton.timeStamp = now;
 					}
 					else {
-						regSel = -1;
+						skipButton.event = false;
+						skipButton.timeStamp = 0;
 					}
-				}
-			
-				if (regSel == -1 || pastRegSel!=regSel) {
-					rightHand.HandStateCounter = 0;
-				}
 
-				if (regSel != -1 ) {
-					displayRegion = &regions[regSel];
-
-					// check if its been confirmed
-					if (now -rightHand.HandStateCounter > handPointerStateCounterThres && rightHand.HandStateCounter != 0) {
-						chooseRegion = false;
-						selectedRegion = &countriesInRegion.at(regSel);
-
+					if (skipButton.event && now - skipButton.timeStamp > 2) {
+						currentState = sequenceMode::COUNTRYCHOICE;
+						introTextPlayer.stop();// stop INTRO
+						displaySkipButton = false;
 						transitionTimer = now;
-						countrySelect = true;
+						return;
+					}
 
-						for (unsigned n = 0; n < selectedRegion->size(); n++) {
-							selectedRegion->at(n).bounds.setPosition(flagLocations[n]);
+				}
+			}
+			if (introTextPlayer.getIsMovieDone() || gui->skipIntroText) {
+				currentState = sequenceMode::COUNTRYCHOICE;
+				introTextPlayer.stop();// stop INTRO
+				return;
+			}
+			break;
+		}
+		case sequenceMode::COUNTRYCHOICE: {
+			displaySkipButton = false;
+
+			textAlignFlag = 0;
+			textAlignFlag |= ofxTextAlign::HORIZONTAL_ALIGN_CENTER;
+			textAlignFlag |= ofxTextAlign::VERTICAL_ALIGN_TOP;
+
+			drawHuman(FIGURE_COLOR_TRANSITION, true);
+			if (!gui->manualSelection) {
+				if (selectedCountry == nullptr && selectedRegion == nullptr) {
+					chooseRegion = true;
+					countrySelect = false;
+				}
+
+
+				//pick a region
+				if (chooseRegion || selectedRegion == nullptr) {
+
+
+					displayBackButton = false;
+					displayText = "Please choose your region";
+
+					pastRegSel = regSel;
+
+					for (int i = 0; i < boundaries.size(); i++) {
+						if (boundaries[i].inside(rightHand.pos)) {
+
+
+							regSel = i;
+
+							if (rightHand.HandStateCounter == 0)
+								rightHand.HandStateCounter = now;
+							break;
+						}
+						else {
+							regSel = -1;
+						}
+					}
+
+					if (regSel == -1 || pastRegSel != regSel) {
+						rightHand.HandStateCounter = 0;
+					}
+
+					if (regSel != -1) {
+						displayRegion = &regions[regSel];
+
+						// check if its been confirmed
+						if (now - rightHand.HandStateCounter > handPointerStateCounterThres && rightHand.HandStateCounter != 0) {
+							chooseRegion = false;
+							selectedRegion = &countriesInRegion.at(regSel);
+
+							transitionTimer = now;
+							countrySelect = true;
+
+							for (unsigned n = 0; n < selectedRegion->size(); n++) {
+								selectedRegion->at(n).bounds.setPosition(flagLocations[n]);
+							}
+
 						}
 
 					}
 
 				}
 
-			}
-		
-			else if (countrySelect) {
+				else if (countrySelect) {
 
-				displayText = "Please select your Country";
+					displayText = "Please select your Country";
 
-				// DISPLAY BACK BUTTON
+					// DISPLAY BACK BUTTON
 
 
-				displayBackButton = true;
-				
-				if (backButtonAlt.bounds.inside(rightHand.pos)) {
+					displayBackButton = true;
 
-					if (backButtonAlt.timeStamp == 0) {
-						backButtonAlt.timeStamp = now;
+					if (backButtonAlt.bounds.inside(rightHand.pos)) {
+
+						if (backButtonAlt.timeStamp == 0) {
+							backButtonAlt.timeStamp = now;
+						}
+						backButtonAlt.event = true;
 					}
-					backButtonAlt.event = true;
-				}
-				else {
-					backButtonAlt.timeStamp = 0;
-					backButtonAlt.event = false;
-				}
+					else {
+						backButtonAlt.timeStamp = 0;
+						backButtonAlt.event = false;
+					}
 
-				if (backButtonAlt.event && now - backButtonAlt.timeStamp> handPointerStateCounterThres) {
-					
+					if (backButtonAlt.event && now - backButtonAlt.timeStamp > handPointerStateCounterThres) {
+
 						selectedRegion = nullptr;
 						chooseRegion = true;
 						countrySelect = false;
 						backButtonAlt.event = false;
 						goto regionSelectionManual;
-					
-				}
 
-				pastRegSel = selectedCountryInRegion;
-				for (unsigned n = 0; n < selectedRegion->size(); n++) {
-
-					if (selectedRegion->at(n).bounds.inside(rightHand.pos)) {
-					
-						selectedCountryInRegion = n; 
-						
-
-						if (rightHand.HandStateCounter == 0)
-							rightHand.HandStateCounter = now;
-						break;
 					}
 
-					else {
-						selectedCountryInRegion = -1;
+					pastRegSel = selectedCountryInRegion;
+					for (unsigned n = 0; n < selectedRegion->size(); n++) {
+
+						if (selectedRegion->at(n).bounds.inside(rightHand.pos)) {
+
+							selectedCountryInRegion = n;
+
+
+							if (rightHand.HandStateCounter == 0)
+								rightHand.HandStateCounter = now;
+							break;
+						}
+
+						else {
+							selectedCountryInRegion = -1;
+						}
 					}
-				}
 
-				if (selectedCountryInRegion == -1 || pastRegSel != selectedCountryInRegion) {
-					rightHand.HandStateCounter = 0;
-				}
+					if (selectedCountryInRegion == -1 || pastRegSel != selectedCountryInRegion) {
+						rightHand.HandStateCounter = 0;
+					}
 
-				if (selectedCountryInRegion != -1) {
-					displayRegion = &regions[regSel];
+					if (selectedCountryInRegion != -1) {
+						displayRegion = &regions[regSel];
 
-					// check if its been confirmed
-					if (now - rightHand.HandStateCounter > handPointerStateCounterThres && rightHand.HandStateCounter != 0) {
-						
+						// check if its been confirmed
+						if (now - rightHand.HandStateCounter > handPointerStateCounterThres && rightHand.HandStateCounter != 0) {
+
 							// check if it has been selected
 
 							selectedCountry = &(selectedRegion->at(selectedCountryInRegion));
@@ -667,555 +694,639 @@ void ofApp::update() {
 
 					}
 
-				
-			}
-		}
-		else {
-			ofShowCursor();
-			drawHuman(FIGURE_COLOR_TRANSITION,true);
 
-			if (selectedCountry == nullptr && selectedRegion == nullptr) {
-				chooseRegion = true;
-				countrySelect = false;
+				}
 			}
-			// show regions
-			if (chooseRegion || selectedRegion == nullptr) {
+			else {
+				ofShowCursor();
+				drawHuman(FIGURE_COLOR_TRANSITION, true);
+
+				if (selectedCountry == nullptr && selectedRegion == nullptr) {
+					chooseRegion = true;
+					countrySelect = false;
+				}
+				// show regions
+				if (chooseRegion || selectedRegion == nullptr) {
 
 				regionSelectionManual:
-				displayText = "Please choose your region";
+					displayText = "Please choose your region";
 
-				for (int i = 0; i < boundaries.size(); i++) {
-					// replace mouseX and mouseY with body.sel;
-					if (boundaries[i].inside(mouseX, mouseY)) {
-						regSel = i;
-						break;
+					for (int i = 0; i < boundaries.size(); i++) {
+						// replace mouseX and mouseY with body.sel;
+						if (boundaries[i].inside(mouseX, mouseY)) {
+							regSel = i;
+							break;
+						}
+						else { regSel = -1; }
 					}
-					else { regSel = -1; }
+
+					if (regSel != -1) {
+						displayRegion = &regions[regSel];
+
+						if (ofGetMousePressed() && now - transitionTimer > 2) {
+							chooseRegion = false;
+							selectedRegion = &countriesInRegion.at(regSel);
+
+							transitionTimer = now;
+							countrySelect = true;
+
+							for (unsigned n = 0; n < selectedRegion->size(); n++) {
+
+								selectedRegion->at(n).bounds.setPosition(flagLocations[n]);
+							}
+						}
+
+					}
 				}
+				else if (countrySelect) {
 
-				if (regSel != -1) {
-					displayRegion = &regions[regSel];
-					
-					if (ofGetMousePressed() && now - transitionTimer> 2) {
-						chooseRegion = false;
-						selectedRegion = &countriesInRegion.at(regSel);
+					// DISPLAY BACK BUTTON
 
-						transitionTimer = now;
-						countrySelect = true;
+					displayBackButton = true;
 
-						for (unsigned n = 0; n < selectedRegion->size(); n++) {
-
-							selectedRegion->at(n).bounds.setPosition(flagLocations[n]);
+					backButtonAlt.event = ofGetMousePressed();
+					if (now - transitionTimer > 1) {
+						if (backButtonAlt.bounds.inside(mouseX, mouseY) && backButtonAlt.event) {
+							selectedRegion = nullptr;
+							chooseRegion = true;
+							countrySelect = false;
+							backButtonAlt.event = false;
+							goto regionSelectionManual;
 						}
 					}
 
-				}
-			}
-			else if (countrySelect) {
+				countrySelctionManual:
 
+
+					displayText = "Please select your Country";
+					for (unsigned n = 0; n < selectedRegion->size(); n++) {
+
+						if (selectedRegion->at(n).bounds.inside(mouseX, mouseY)) {
+							selectedCountryInRegion = n;
+
+							if (ofGetMousePressed() && (now - transitionTimer > 2)) {
+
+								selectedCountry = &(selectedRegion->at(n));
+								float f = sourceData[(selectedCountry->index) + 1].getFloat(sourceCol::CURRENTVACCINATIONRATE);
+
+								if (f + 1 > 80) f--;
+								sourceData[(selectedCountry->index) + 1].setFloat(sourceCol::CURRENTVACCINATIONRATE, f);
+								currentState = sequenceMode::VACCINECHOICE;
+								transitionTimer = now;
+								choiceSeqVaccine = 0;
+
+								figureSetup(figureAmount, f);
+								displayText = "Shadowpox vaccination rate in \n" + sourceData[(selectedCountry->index) + 1].getString(sourceCol::COUNTRY) + ": \n" + ofToString(f, 0) + "%";
+
+								vaccineButton.bounds.setPosition((100 + ((f / 10) + 1) * 100) - vaccineButton.size.x / 2, ofGetHeight() / 2 - vaccineButton.size.y / 2);
+								virusButton.bounds.setPosition(ofGetWidth() - vaccineButton.size.x / 2 - ((((100 - f) / 10) + 1) * 100), ofGetHeight() / 2 - vaccineButton.size.y / 2);
+
+								textAlignmentX = (vaccineButton.bounds.getCenter().x + virusButton.bounds.getCenter().x) / 2;
+								return;
+
+							}
+							break;
+						}
+
+						else {
+							selectedCountryInRegion = -1;
+						}
+
+
+					}
+				}
+
+			}
+			break;
+		}
+		case sequenceMode::VACCINECHOICE: {
+
+			if (gui->manualSelection)ofShowCursor();
+			drawHuman(FIGURE_COLOR_TRANSITION, true);
+			// CHOICE
+			// show choice
+			if (choiceSeqVaccine == 0) {
+				float currentVaccine = sourceData[(selectedCountry->index) + 1].getFloat(sourceCol::CURRENTVACCINATIONRATE);
+
+				for (int k = 0; k < figures.size(); k++) {
+					figures[k].changeState(miniFig::START);
+				}
 				// DISPLAY BACK BUTTON
 
-				displayBackButton = true; 
-		
-				backButtonAlt.event = ofGetMousePressed();
-				if (now - transitionTimer > 1) {
-					if (backButtonAlt.bounds.inside(mouseX, mouseY) && backButtonAlt.event) {
-						selectedRegion = nullptr;
-						chooseRegion = true;
-						countrySelect = false;
-						backButtonAlt.event = false;
-						goto regionSelectionManual;
+				displayBackButton = true;
+
+
+				// mouse check back 
+
+				if (gui->manualSelection) {
+					backButton.event = ofGetMousePressed();
+
+					if (backButton.bounds.inside(mouseX, mouseY) && backButton.event) {
+						choiceSeqVaccine = 0;
+						countrySelect = true;
+						chooseRegion = false;
+						currentState = sequenceMode::COUNTRYCHOICE;
+						backButton.event = false;
+						transitionTimer = now;
+						goto countrySelctionManual;
 					}
+
+
+					// show text
+						// mouse check vaccine choice 
+					if (now - transitionTimer > 1) {
+						if (vaccineButton.bounds.inside(mouseX, mouseY) && ofGetMousePressed()) {
+							isVaccine = true;
+							choiceSeqVaccine = 1;
+							transitionTimer = now;
+							displayBackButton = false;
+							return;
+						}
+						if (virusButton.bounds.inside(mouseX, mouseY) && ofGetMousePressed()) {
+							isVaccine = false;
+							choiceSeqVaccine = 1;
+							transitionTimer = now;
+							displayBackButton = false;
+							return;
+						}
+					}
+
 				}
 
-			countrySelctionManual:
-			
-				
-				displayText = "Please select your Country";
-				for (unsigned n = 0; n < selectedRegion->size(); n++) {
+				else {
 
-					if (selectedRegion->at(n).bounds.inside(mouseX, mouseY)) {
-						selectedCountryInRegion = n;
+					if (backButton.bounds.inside(rightHand.pos)) {
 
-						if (ofGetMousePressed() && (now - transitionTimer > 2)) {
+						if (backButton.timeStamp == 0) {
+							backButton.timeStamp = now;
+						}
+						backButton.event = true;
+					}
+					else {
+						backButton.timeStamp = 0;
+						backButton.event = false;
+					}
 
-							selectedCountry = &(selectedRegion->at(n));
-							float f = sourceData[(selectedCountry->index) + 1].getFloat(sourceCol::CURRENTVACCINATIONRATE);
+					if (backButton.event && now - backButton.timeStamp > handPointerStateCounterThres) {
+						choiceSeqVaccine = 0;
+						countrySelect = true;
+						chooseRegion = false;
+						currentState = sequenceMode::COUNTRYCHOICE;
+						backButton.event = false;
+						transitionTimer = now;
+						goto countrySelctionManual;
+					}
 
-							if (f + 1 > 80) f--;
-							sourceData[(selectedCountry->index) + 1].setFloat(sourceCol::CURRENTVACCINATIONRATE, f);
-							currentState = sequenceMode::VACCINECHOICE;
+
+					if (now - transitionTimer > 3) {
+						if (vaccineButton.bounds.inside(rightHand.pos)) {
+
+							if (vaccineButton.timeStamp == 0) {
+								vaccineButton.timeStamp = now;
+							}
+							vaccineButton.event = true;
+						}
+						else {
+							vaccineButton.timeStamp = 0;
+							vaccineButton.event = false;
+						}
+
+						if (vaccineButton.event && now - vaccineButton.timeStamp > handPointerStateCounterThres) {
+							isVaccine = true;
+							choiceSeqVaccine = 1;
 							transitionTimer = now;
-							choiceSeqVaccine = 0;
-
-							figureSetup(figureAmount, f);
-							displayText = "Shadowpox vaccination rate in \n" + sourceData[(selectedCountry->index)+1].getString(sourceCol::COUNTRY) + ": \n" + ofToString(f,0) + "%";
-
-							vaccineButton.bounds.setPosition((100 + ((f / 10)+1) * 100) - vaccineButton.size.x / 2, ofGetHeight() / 2 - vaccineButton.size.y / 2);
-							virusButton.bounds.setPosition(ofGetWidth() - vaccineButton.size.x / 2 - ((((100 - f) / 10) + 1) * 100), ofGetHeight() / 2 - vaccineButton.size.y / 2);
-
-							textAlignmentX = (vaccineButton.bounds.getCenter().x + virusButton.bounds.getCenter().x) / 2;
+							displayBackButton = false;
 							return;
+						}
 
+						if (virusButton.bounds.inside(rightHand.pos)) {
+
+							if (virusButton.timeStamp == 0) {
+								virusButton.timeStamp = now;
+							}
+							virusButton.event = true;
+						}
+						else {
+							virusButton.timeStamp = 0;
+							virusButton.event = false;
+						}
+
+						if (virusButton.event && now - virusButton.timeStamp > handPointerStateCounterThres) {
+							isVaccine = false;
+							choiceSeqVaccine = 1;
+							transitionTimer = now;
+							displayBackButton = false;
+							return;
+						}
+					}
+
+				}
+
+
+			}
+
+			else if (choiceSeqVaccine == 1) {
+				float currentVaccine = sourceData[(selectedCountry->index) + 1].getFloat(sourceCol::CURRENTVACCINATIONRATE);
+				float currentSeverityRate = sourceData[(selectedCountry->index) + 1].getFloat(sourceCol::CURRENTSEVERITY);
+				float changeInSeverity = sourceData[(selectedCountry->index) + 1].getFloat(sourceCol::CHANGEINSEVERITY);
+				(isVaccine) ? currentVaccine++ : currentVaccine--;
+				(isVaccine) ? currentSeverityRate -= changeInSeverity : currentSeverityRate += changeInSeverity;
+				//displayText = "Shadowpox vaccination rate \n in " + sourceData[selectedCountry->index].getString(sourceCol::COUNTRY) + ": \n" + ofToString(currentVaccine) + "%";
+
+				miniFig::countrySeverityRate = currentSeverityRate;
+				sourceData[(selectedCountry->index) + 1].setFloat(sourceCol::CURRENTSEVERITY, currentSeverityRate);
+				sourceData[(selectedCountry->index) + 1].setFloat(sourceCol::CURRENTVACCINATIONRATE, currentVaccine);
+				choiceSeqVaccine = 2;
+
+				transitionTimer = now;
+				return;
+			}
+
+			else if (choiceSeqVaccine == 2) {
+
+				float currentVaccine = sourceData[(selectedCountry->index) + 1].getFloat(sourceCol::CURRENTVACCINATIONRATE);
+				displayText = "Shadowpox vaccination rate \n in " + sourceData[(selectedCountry->index) + 1].getString(sourceCol::COUNTRY) + ": \n"
+					+ "Was: " + ofToString(((isVaccine) ? currentVaccine - 1 : currentVaccine + 1), 0) + "% \n"
+					+ "Now: " + ofToString(currentVaccine, 0) + "% \n";
+				figures.clear();
+				figureSetup(figureAmount, (int)currentVaccine);
+
+				for (int k = 0; k < figures.size(); k++) {
+					figures[k].changeState(miniFig::START);
+				}
+
+				// show text
+				// delay
+
+				if (now - transitionTimer > 5) {
+					sourceData.save("csv/vax_serverity.csv");
+					ofLogNotice("shadowpox") << "data saved!" << "csv/vax_serverity.csv";
+					choiceSeqVaccine = 3;
+					transitionTimer = now;
+					vaccineDialog = 0;
+					displaySkipButton = true;
+					return;
+				}
+			}
+
+			else if (choiceSeqVaccine == 3) {
+
+				if (displaySkipButton) {
+
+					if (gui->manualSelection) {
+						if (skipButton.bounds.inside(mouseX, mouseY) && ofGetMousePressed()) {
+							displayText = (isVaccine) ? "Protection Score: " : "Infection Score: ";
+							currentState = sequenceMode::GAMEPLAY;
+							gameTimer = now;
+							displaySkipButton = false;
+							displayDemoVid = false;
+							return;
+						}
+					}
+					else {
+
+						if (skipButton.bounds.inside(rightHand.pos)) {
+							skipButton.event = true;
+							if (skipButton.timeStamp == 0)
+								skipButton.timeStamp = now;
+						}
+						else {
+							skipButton.event = false;
+							skipButton.timeStamp = 0;
+						}
+
+						if (skipButton.event && now - skipButton.timeStamp > 1) {
+							displayText = (isVaccine) ? "Protection Score: " : "Infection Score: ";
+							currentState = sequenceMode::GAMEPLAY;
+							gameTimer = now;
+							displaySkipButton = false;
+								displayDemoVid = false;
+							return;
+						}
+
+					}
+				}
+				if (isVaccine) {
+					switch (vaccineDialog) {
+					case 0: {
+						displayText = "The shadowpox vaccine is\n a weakened form of the virus.\n It is not infectious. \n \n The vaccine lets you safely practice\n fighting the disease.";
+						if (now - transitionTimer > 8) {
+							vaccineDialog = 1;
+							transitionTimer = now;
+							displayDemoVid = true;
+							demoPushPlayer.play();
+						}
+						break;
+					}
+					case 1: {
+						displayText = "Practice fighting shadowpox \n by moving your hands to \n push the pox off your body.";
+
+
+						if (!demoPushPlayer.isPlaying()) demoPushPlayer.play();
+
+						demoPushPlayer.update();
+						if (now - transitionTimer > 15) {
+							vaccineDialog = 2;
+							transitionTimer = now;
+							demoPushPlayer.stop();
+							displayDemoVid = false;
+						}
+						break;
+					}
+					case 2: {
+						displayText = "If you had caught the wild virus, \n you would be infecting others \n while you fight it. \n";
+
+						if (now - transitionTimer > 5) {
+							vaccineDialog = 3;
+							transitionTimer = now;
 						}
 						break;
 					}
 
-					else {
-						selectedCountryInRegion = -1;
-					}
+					case 3: {
+						displayText = "Your Protection Score is the number \n of people you have NOT infected \n because you are immunized. \n ";
 
-
-				}
-			}
-
-		}
-		break;
-	}
-	case sequenceMode::VACCINECHOICE: {
-
-		if (gui->manualSelection)ofShowCursor();
-		drawHuman(FIGURE_COLOR_TRANSITION,true);
-		// CHOICE
-		// show choice
-		if (choiceSeqVaccine == 0) {
-			float currentVaccine = sourceData[(selectedCountry->index) + 1].getFloat(sourceCol::CURRENTVACCINATIONRATE);
-
-			for (int k = 0; k < figures.size(); k++) {
-				figures[k].changeState(miniFig::START);
-			}
-			// DISPLAY BACK BUTTON
-
-			displayBackButton = true; 
-
-
-			// mouse check back 
-
-			if (gui->manualSelection) {
-				backButton.event = ofGetMousePressed();
-
-				if (backButton.bounds.inside(mouseX, mouseY) && backButton.event) {
-					choiceSeqVaccine = 0;
-					countrySelect = true;
-					chooseRegion = false;
-					currentState = sequenceMode::COUNTRYCHOICE;
-					backButton.event = false;
-					transitionTimer = now;
-					goto countrySelctionManual;
-				}
-
-
-				// show text
-					// mouse check vaccine choice 
-				if (now - transitionTimer > 1) {
-					if (vaccineButton.bounds.inside(mouseX, mouseY) && ofGetMousePressed()) {
-						isVaccine = true;
-						choiceSeqVaccine = 1;
-						transitionTimer = now;
-						displayBackButton = false;
-						return;
-					}
-					if (virusButton.bounds.inside(mouseX, mouseY) && ofGetMousePressed()) {
-						isVaccine = false;
-						choiceSeqVaccine = 1;
-						transitionTimer = now;
-						displayBackButton = false;
-						return;
-					}
-				}
-
-			}
-
-			else {
-			
-				if (backButton.bounds.inside(rightHand.pos)) {
-
-					if (backButton.timeStamp == 0) {
-						backButton.timeStamp = now;
-					}
-					backButton.event = true;
-				}
-				else {
-					backButton.timeStamp = 0;
-					backButton.event = false; 
-				}
-
-				if (backButton.event && now- backButton.timeStamp> handPointerStateCounterThres) {
-					choiceSeqVaccine = 0;
-					countrySelect = true;
-					chooseRegion = false;
-					currentState = sequenceMode::COUNTRYCHOICE;
-					backButton.event = false;
-					transitionTimer = now;
-					goto countrySelctionManual;
-				}
-
-
-				if (now - transitionTimer > 3) {
-					if (vaccineButton.bounds.inside(rightHand.pos)) {
-
-						if (vaccineButton.timeStamp == 0) {
-							vaccineButton.timeStamp = now;
+						if (now - transitionTimer > 5) {
+							vaccineDialog = 4;
+							transitionTimer = now;
 						}
-						vaccineButton.event = true;
+						break;
 					}
-					else {
-						vaccineButton.timeStamp = 0;
-						vaccineButton.event = false;
-					}
-
-					if (vaccineButton.event && now - vaccineButton.timeStamp > handPointerStateCounterThres) {
-						isVaccine = true;
-						choiceSeqVaccine = 1;
-						transitionTimer = now;
-						displayBackButton = false;
-						return;
-					}
-
-					if (virusButton.bounds.inside(rightHand.pos)) {
-
-						if (virusButton.timeStamp == 0) {
-							virusButton.timeStamp = now;
-						}
-						virusButton.event = true;
-					}
-					else {
-						virusButton.timeStamp = 0;
-						virusButton.event = false;
-					}
-
-					if (virusButton.event && now - virusButton.timeStamp > handPointerStateCounterThres) {
-						isVaccine = false;
-						choiceSeqVaccine = 1;
-						transitionTimer = now;
-						displayBackButton = false;
-						return;
-					}
-				}
-			
-			}
-	
-		
-		}
-
-		else if (choiceSeqVaccine == 1) {
-			float currentVaccine = sourceData[(selectedCountry->index) + 1].getFloat(sourceCol::CURRENTVACCINATIONRATE);
-			float currentSeverityRate = sourceData[(selectedCountry->index) + 1].getFloat(sourceCol::CURRENTSEVERITY);
-			float changeInSeverity = sourceData[(selectedCountry->index) + 1].getFloat(sourceCol::CHANGEINSEVERITY);
-			(isVaccine) ? currentVaccine++ : currentVaccine--;
-			(isVaccine) ? currentSeverityRate -= changeInSeverity : currentSeverityRate += changeInSeverity;
-			//displayText = "Shadowpox vaccination rate \n in " + sourceData[selectedCountry->index].getString(sourceCol::COUNTRY) + ": \n" + ofToString(currentVaccine) + "%";
-
-			miniFig::countrySeverityRate = currentSeverityRate;
-			sourceData[(selectedCountry->index) + 1].setFloat(sourceCol::CURRENTSEVERITY, currentSeverityRate);
-			sourceData[(selectedCountry->index) + 1].setFloat(sourceCol::CURRENTVACCINATIONRATE, currentVaccine);
-			choiceSeqVaccine = 2;
-
-			transitionTimer = now;
-			return;
-		}
-
-		else if (choiceSeqVaccine == 2) {
-
-			float currentVaccine = sourceData[(selectedCountry->index) + 1].getFloat(sourceCol::CURRENTVACCINATIONRATE);
-			displayText = "Shadowpox vaccination rate \n in " + sourceData[(selectedCountry->index)+1].getString(sourceCol::COUNTRY) + ": \n"
-				+ "Was: " + ofToString(((isVaccine)? currentVaccine-1:currentVaccine+1),0) + "% \n"
-				+ "Now: " + ofToString(currentVaccine,0) + "% \n";
-			figures.clear();
-			figureSetup(figureAmount, (int)currentVaccine);
-
-			for (int k = 0; k < figures.size(); k++) {
-				figures[k].changeState(miniFig::START);
-			}
-
-			// show text
-			// delay
-
-			if (now - transitionTimer > 5) {
-				sourceData.save("csv/vax_serverity.csv");
-				ofLogNotice("shadowpox") << "data saved!" << "csv/vax_serverity.csv";
-				choiceSeqVaccine = 3;
-				transitionTimer = now;
-				vaccineDialog = 0;
-				displaySkipButton = true;
-				return;
-			}
-		}
-
-		else if (choiceSeqVaccine == 3) {
-
-			if (displaySkipButton) {
-
-				if (gui->manualSelection) {
-					if (skipButton.bounds.inside(mouseX, mouseY) && ofGetMousePressed()) {
+					case 4: {
 						displayText = (isVaccine) ? "Protection Score: " : "Infection Score: ";
 						currentState = sequenceMode::GAMEPLAY;
 						gameTimer = now;
-						displaySkipButton = false;
-						return;
+						break;
+					}
 					}
 				}
+
 				else {
-				
-					if (skipButton.bounds.inside(rightHand.pos)) {
-						skipButton.event = true; 
-						if (skipButton.timeStamp==0)
-						skipButton.timeStamp = now;
+					switch (vaccineDialog) {
+					case 0: {
+						displayText = "You have caught shadowpox. \n You can fight the virus.";
+
+						if (now - transitionTimer > 4) {
+							vaccineDialog = 1;
+							transitionTimer = now;
+							displayDemoVid = true;
+							demoPushPlayer.play();
+						}
+						break;
 					}
-					else {
-						skipButton.event = false;
-						skipButton.timeStamp = 0; 
+					case 1: {
+						displayText = "Fight the virus \n by moving your hands to \n push the pox off your body.";
+						if (!demoPushPlayer.isPlaying()) demoPushPlayer.play();
+						demoPushPlayer.update();
+						if (now - transitionTimer > 15) {
+							vaccineDialog = 2;
+							transitionTimer = now;
+							demoPushPlayer.stop();
+							displayDemoVid = false;
+						}
+						break;
+					}
+					case 2: {
+						displayText = "As you fight the virus,\n you can infect others. \n";
+
+						if (now - transitionTimer > 4) {
+							vaccineDialog = 3;
+							transitionTimer = now;
+						}
+						break;
 					}
 
-					 if (skipButton.event && now-skipButton.timeStamp>1) {
+					case 3: {
+						displayText = "Your Infection Score is the \n number of people to whom \n you have passed the virus.";
+
+						if (now - transitionTimer > 5) {
+							vaccineDialog = 4;
+							transitionTimer = now;
+						}
+						break;
+					}
+					case 4: {
 						displayText = (isVaccine) ? "Protection Score: " : "Infection Score: ";
 						currentState = sequenceMode::GAMEPLAY;
 						gameTimer = now;
-						displaySkipButton = false;
-						return;
+						break;
 					}
-				
+					}
 				}
+
 			}
-			if (isVaccine) {
-				switch (vaccineDialog) {
-				case 0: {
-					displayText = "The shadowpox vaccine is\n a weakened form of the virus.\n It is not infectious. \n \n The vaccine lets you safely practice\n fighting the disease.";
-					if (now - transitionTimer > 8) { vaccineDialog = 1;
-					transitionTimer = now;
-					}
-					break;
-				}
-				case 1: {
-					displayText = "Practice fighting shadowpox \n by pushing them off your body.";
-
-					if (now - transitionTimer > 4) {
-						vaccineDialog = 2;
-						transitionTimer = now;
-					}
-					break;
-				}
-				case 2: {
-					displayText = "If you had caught the wild virus, \n you would be infecting others \n while you fight it. \n";
-
-					if (now - transitionTimer > 5) {
-						vaccineDialog = 3;
-						transitionTimer = now;
-					}
-					break;
-				}
-
-				case 3: {
-					displayText="Your Protection Score is the number \n of people you have NOT infected \n because you are immunized. \n ";
-
-					if (now - transitionTimer > 5) {
-						vaccineDialog = 4;
-						transitionTimer = now;
-					}
-					break;
-				}
-				case 4: {
-					displayText = (isVaccine) ? "Protection Score: " : "Infection Score: ";
-					currentState = sequenceMode::GAMEPLAY;
-					gameTimer = now;
-					break;
-				}
-				}
-			}
-
-			else {
-				switch (vaccineDialog) {
-				case 0: {
-					displayText = "You have caught shadowpox. \n You can fight the virus.";
-
-					if (now - transitionTimer > 4) { vaccineDialog = 1;
-					transitionTimer = now;
-					}
-					break;
-				}
-				case 1: {
-					displayText = "Fight the virus by pushing \n the shadowpox off your body.";
-					if (now - transitionTimer > 4) { vaccineDialog = 2;
-					transitionTimer = now;
-					}
-					break;
-				}
-				case 2: {
-					displayText = "As you fight the virus,\n you can infect others. \n";
-
-					if (now - transitionTimer > 4) { vaccineDialog = 3;
-					transitionTimer = now;
-					}
-					break;
-				}
-
-				case 3: {
-					displayText = "Your Infection Score is the \n number of people to whom \n you have passed the virus.";
-
-					if (now - transitionTimer > 5) {
-						vaccineDialog = 4;
-						transitionTimer = now;
-					}
-					break;
-				}
-				case 4: {
-					displayText = (isVaccine) ? "Protection Score: " : "Infection Score: ";
-					currentState = sequenceMode::GAMEPLAY;
-					gameTimer = now;
-					break;
-				}
-				}
-			}
-
+			// DISPLAY
+			break;
 		}
-		// DISPLAY
-		break;
-	}
-	case sequenceMode::GAMEPLAY: {
+		case sequenceMode::GAMEPLAY: {
 
-		displaySkipButton = false;
-		ofHideCursor();
-		if (now - gameTimer < 15 * gui->gamePlayLength)
-		{
-			// timer
-			for (int k = 0; k < figures.size(); k++) {
-				figures[k].update();
-				figures[k].changeState(miniFig::HAPPY);
-			}
-			drawHuman(FIGURE_COLOR);
+			displaySkipButton = false;
+			ofHideCursor();
+			if (now - gameTimer < 15 * gui->gamePlayLength)
+			{
+				// timer
+				for (int k = 0; k < figures.size(); k++) {
+					figures[k].update();
+					figures[k].changeState(miniFig::HAPPY);
+				}
+				drawHuman(FIGURE_COLOR);
 
-			for (int i = 0; i < patients.size(); i++) {
-				// if tracking update!
-				if (patients[i].tracking) {
-					patients[i].isToroPox = isVaccine;
-					patients[i].minRadius = gui->minSize;//
-					patients[i].maxRadius = gui->maxSize;//
-					patients[i].growth = gui->growthRate;//
-					patients[i].rotateSpeed = gui->rotationSpeed;//
-					patients[i].phaseSpeed = gui->phaseSpeed;//
-					patients[i].speed = gui->migrationSpeed;//
-					patients[i].maxCells = gui->maxCount;
-					patients[i].minWaxWane = gui->minWaxWane;
-					patients[i].maxWaxWane = gui->maxWaxWane;
-					patients[i].distanceX = gui->distanceX;
-					patients[i].distanceY = gui->distanceY;
-					patients[i].detectionRange = gui->detectionRange;
-					patients[i].update();
+				for (int i = 0; i < patients.size(); i++) {
+					// if tracking update!
+					if (patients[i].tracking) {
+						patients[i].isToroPox = isVaccine;
+						patients[i].minRadius = gui->minSize;//
+						patients[i].maxRadius = gui->maxSize;//
+						patients[i].growth = gui->growthRate;//
+						patients[i].rotateSpeed = gui->rotationSpeed;//
+						patients[i].phaseSpeed = gui->phaseSpeed;//
+						patients[i].speed = gui->migrationSpeed;//
+						patients[i].maxCells = gui->maxCount;
+						patients[i].minWaxWane = gui->minWaxWane;
+						patients[i].maxWaxWane = gui->maxWaxWane;
+						patients[i].distanceX = gui->distanceX;
+						patients[i].distanceY = gui->distanceY;
+						patients[i].detectionRange = gui->detectionRange;
+						patients[i].update();
 
-					if ((ofGetElapsedTimef() - spawnTimer) >= (1000.0f / (float)gui->buddingSpeed)*0.001f && patients[i].cluster.size() < gui->maxCount) {
+						if ((ofGetElapsedTimef() - spawnTimer) >= (1000.0f / (float)gui->buddingSpeed)*0.001f && patients[i].cluster.size() < gui->maxCount) {
 
-						patients[i].addCellCluster(1, p1, p2);
-						spawnTimer = ofGetElapsedTimef();
-						//if (patients[i].cluster.size()) {
-							//ofLogNotice("shadowpox") << ofToString(patients[i].cluster.size());
+							patients[i].addCellCluster(1, p1, p2);
+							spawnTimer = ofGetElapsedTimef();
+							//if (patients[i].cluster.size()) {
+								//ofLogNotice("shadowpox") << ofToString(patients[i].cluster.size());
 
 							for (int j = 0; j < patients[i].cluster.size(); j++) {
 
 								if (patients[i].cluster[j].isDying) {
-								for (int k = 0; k < figures.size(); k++) {
-									miniFig &fig = figures[k];
-								   fig.getInfected(patients[i].cluster[j].pos, infectionScore,isVaccine);
-								}
+									for (int k = 0; k < figures.size(); k++) {
+										miniFig &fig = figures[k];
+										fig.getInfected(patients[i].cluster[j].pos, infectionScore, isVaccine);
+									}
 								}
 
 								else { continue; }
 							}
 						}
-					//}
-				}
+						//}
+					}
 
-				// if not clear the pox of that patient, only if it hasn't been cleared already
-				else {
-					if (patients[i].cluster.size()) {
-						patients[i].cluster.clear();
+					// if not clear the pox of that patient, only if it hasn't been cleared already
+					else {
+						if (patients[i].cluster.size()) {
+							patients[i].cluster.clear();
+						}
 					}
 				}
 			}
-		}
-		else { currentState = sequenceMode::END;
-		endDialog = 0;
-		transitionTimer = now;
-
-		}
-		break;
-	}
-	case sequenceMode::END: {
-
-		switch (endDialog) {
-		case 0: {
-			// clear remove all the pox
-			for (cellCluster pox : patients) {
-				if (pox.cluster.size()) {
-					pox.cluster.clear();
-				}
-			}
-			// show the score!
-			SaveData();
-
-			endDialog = 1;
-		}
-		case 1:{
-			displayText = (isVaccine) ?
-				"Your Protection Score is " + ofToString(infectionScore,0) + ".\n" + " \n" + "This is how many people you\n would have infected\n if you were not immunized. \n \n Of these, " + ofToString(miniFig::getDeathScore())+ " would have died." :
-				"Your Infection Score is " + ofToString(infectionScore,0) + ".\n" + " \n" + "This is the number of \n people to whom \n you passed the virus. \n \n Of these, " + ofToString(miniFig::getDeathScore()) + " died." ;
-			if (now - transitionTimer > 7) { endDialog = 2;
-			transitionTimer = now;
-			}
-			break;
-		}
-		case 2: {
-			/*if (!scoreCalculated) {
-				modInfectionScore = infectionScore % 99;
-				int div = infectionScore / 99;
-				div = ofClamp(div, 1, 10);
-			if (infectionScore < 100)modInfectionScore = infectionScore;
-			else if (modInfectionScore < 25)modInfectionScore += (rand() % (10 + div));
-			else if (modInfectionScore > 85)modInfectionScore -= (rand() % (20 - div));
-				scoreCalculated = true;
-			}*/
-
-			poxencode(isVaccine, infectionScore, miniFig::getDeathScore(), code);
-
-			displayText = "Your web code is:\n \n";
-
-			displayText += code;
-
-			displayText += "\n \n Write your code in the blank on the card, and visit \n \n";
-			displayText += "shadowpox.org /";
-			displayText += code;
-			displayText += "\n \n to meet the people in your \n";
-			displayText += (isVaccine) ? "Protection ": "Infection ";
-			displayText += "Collection.";
-
-				if (now - transitionTimer > 20) {
-				endDialog = 3;
+			else {
+				currentState = sequenceMode::END;
+				endDialog = 0;
 				transitionTimer = now;
+
 			}
 			break;
-
 		}
-		case 3: {
+		case sequenceMode::END: {
 
-			selectedCountry = nullptr;
-			selectedRegion = nullptr;
-			isVaccine = false;
-			infectionScore = 0;
-			modInfectionScore = 0;
-			scoreCalculated = false;
-			// after a certain amount of time
-			currentState = sequenceMode::SCREENSAVER;
-			displaySkipButton = true;
-			miniFig::resetDeathScore();
+			switch (endDialog) {
+			case 0: {
+				// clear remove all the pox
+				for (cellCluster pox : patients) {
+					if (pox.cluster.size()) {
+						pox.cluster.clear();
+					}
+				}
+				// show the score!
+				SaveData();
 
-			textAlignFlag = 0;
-			textAlignFlag |= ofxTextAlign::HORIZONTAL_ALIGN_CENTER;
-			textAlignFlag |= ofxTextAlign::VERTICAL_ALIGN_TOP;
+				endDialog = 1;
+			}
+			case 1: {
+				displayText = (isVaccine) ?
+					"Your Protection Score is " + ofToString(infectionScore, 0) + ".\n" + " \n" + "This is how many people you\n would have infected\n if you were not immunized. \n \n Of these, " + ofToString(miniFig::getDeathScore()) + " would have died." :
+					"Your Infection Score is " + ofToString(infectionScore, 0) + ".\n" + " \n" + "This is the number of \n people to whom \n you passed the virus. \n \n Of these, " + ofToString(miniFig::getDeathScore()) + " died.";
+				if (now - transitionTimer > 7) {
+					endDialog = 2;
+					transitionTimer = now;
+				}
+				break;
+			}
+			case 2: {
+				/*if (!scoreCalculated) {
+					modInfectionScore = infectionScore % 99;
+					int div = infectionScore / 99;
+					div = ofClamp(div, 1, 10);
+				if (infectionScore < 100)modInfectionScore = infectionScore;
+				else if (modInfectionScore < 25)modInfectionScore += (rand() % (10 + div));
+				else if (modInfectionScore > 85)modInfectionScore -= (rand() % (20 - div));
+					scoreCalculated = true;
+				}*/
+
+				poxencode(isVaccine, infectionScore, miniFig::getDeathScore(), code);
+
+				displayText = "Your web code is:\n \n";
+
+				displayText += code;
+
+				displayText += "\n \n Write your code in the blank on the card, and visit \n \n";
+				displayText += "shadowpox.org /";
+				displayText += code;
+				displayText += "\n \n to meet the people in your \n";
+				displayText += (isVaccine) ? "Protection " : "Infection ";
+				displayText += "Collection.";
+
+				// play again button
+
+				if (gui->manualSelection) {
+					if (playAgainButton.bounds.inside(mouseX, mouseY) && ofGetMousePressed()) {
+						currentState = sequenceMode::COUNTRYCHOICE;
+						selectedCountry = nullptr;
+						selectedRegion = nullptr;
+						isVaccine = false;
+						infectionScore = 0;
+						modInfectionScore = 0;
+						scoreCalculated = false;
+						displaySkipButton = true;
+						miniFig::resetDeathScore();
+
+						textAlignFlag = 0;
+						textAlignFlag |= ofxTextAlign::HORIZONTAL_ALIGN_CENTER;
+						textAlignFlag |= ofxTextAlign::VERTICAL_ALIGN_TOP;
+						displaySkipButton = false;
+						transitionTimer = now;
+						return;
+					}
+				}
+				else {
+
+					if (playAgainButton.bounds.inside(rightHand.pos)) {
+						playAgainButton.event = true;
+						if (playAgainButton.timeStamp == 0)
+							playAgainButton.timeStamp = now;
+					}
+					else {
+						playAgainButton.event = false;
+						playAgainButton.timeStamp = 0;
+					}
+
+					if (playAgainButton.event && now - playAgainButton.timeStamp > 2) {
+						currentState = sequenceMode::COUNTRYCHOICE;
+						selectedCountry = nullptr;
+						selectedRegion = nullptr;
+						isVaccine = false;
+						infectionScore = 0;
+						modInfectionScore = 0;
+						scoreCalculated = false;
+						displaySkipButton = true;
+						miniFig::resetDeathScore();
+
+						textAlignFlag = 0;
+						textAlignFlag |= ofxTextAlign::HORIZONTAL_ALIGN_CENTER;
+						textAlignFlag |= ofxTextAlign::VERTICAL_ALIGN_TOP;
+						displaySkipButton = false;
+						transitionTimer = now;
+						return;
+					}
+
+				}
+
+
+				if (now - transitionTimer > 60) {
+					endDialog = 3;
+					transitionTimer = now;
+				}
+
+				if (numOfBodiesTracked == 0) {
+					endDialog = 3;
+					transitionTimer = now;
+				}
+				break;
+
+			}
+			case 3: {
+
+				selectedCountry = nullptr;
+				selectedRegion = nullptr;
+				isVaccine = false;
+				infectionScore = 0;
+				modInfectionScore = 0;
+				scoreCalculated = false;
+				// after a certain amount of time
+				currentState = sequenceMode::SCREENSAVER;
+				displaySkipButton = true;
+				miniFig::resetDeathScore();
+
+				textAlignFlag = 0;
+				textAlignFlag |= ofxTextAlign::HORIZONTAL_ALIGN_CENTER;
+				textAlignFlag |= ofxTextAlign::VERTICAL_ALIGN_TOP;
+				break;
+			}
+			}
+
 			break;
 		}
 		}
-
-		break;
-	}
 	}
 }
 
@@ -1245,7 +1356,13 @@ void ofApp::draw() {
 		case sequenceMode::COUNTRYCHOICE:
 		{
 			if (numOfBodiesTracked > 1) {
-				text.draw(warningText, ofGetScreenWidth()/2, ofGetScreenHeight() / 2, textAlignFlag);
+
+				glPushMatrix();
+				glTranslatef(ofGetScreenWidth() / 2, ofGetScreenHeight() / 2, 0);
+				glScalef((gui->flipText) ? -1.0f : 1.0f, 1.0f, 1.0f);
+
+				text.draw(warningText, 0, 0, textAlignFlag);
+				glPopMatrix();
 			}
 			else {
 			ofEnableAlphaBlending();
@@ -1275,7 +1392,7 @@ void ofApp::draw() {
 
 					if (!gui->manualSelection) {
 						displayRegion->draw(
-							boundaries[regSel].getCentroid2D(),
+							regionCenter[regSel],
 							displayRegion->getWidth(),
 							displayRegion->getHeight());
 
@@ -1285,7 +1402,7 @@ void ofApp::draw() {
 					}
 					else {
 						displayRegion->draw(
-							boundaries[regSel].getCentroid2D(),
+							regionCenter[regSel],
 							displayRegion->getWidth(),
 							displayRegion->getHeight());
 					}
@@ -1296,8 +1413,6 @@ void ofApp::draw() {
 				ofPopStyle();
 			}
 			else if (selectedRegion != nullptr && countrySelect) {
-
-
 
 				ofSetColor(255, 255, 255, 255);
 				glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA); // set blending mode
@@ -1351,22 +1466,34 @@ void ofApp::draw() {
 		}
 		case sequenceMode::VACCINECHOICE: {
 			if (numOfBodiesTracked > 1) {
-					text.draw(warningText, ofGetScreenWidth() / 2, ofGetScreenHeight() / 2, textAlignFlag);
+				glPushMatrix();
+				glTranslatef(ofGetScreenWidth() / 2, ofGetScreenHeight() / 2, 0);
+				glScalef((gui->flipText) ? -1.0f : 1.0f, 1.0f, 1.0f);
+
+				text.draw(warningText, 0, 0, textAlignFlag);
+				glPopMatrix();
 			}
 			else {
-				ofEnableAlphaBlending();
-				ofSetColor(255, 255, 255, 255);
 
-				for (int k = 0; k < figures.size(); k++) {
-					figures[k].draw();
+				if (displayDemoVid) {
+					demoPushPlayer.draw(0, 0, ofGetWidth(), ofGetHeight());
 				}
+				else {
+					ofEnableAlphaBlending();
+					ofSetColor(255, 255, 255, 255);
 
-				ofSetColor(255, 255, 255, 255);
-				glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA); // set blending mode
-				this->skeletonFBO.draw(0, 0, ofGetWidth(), ofGetHeight());
+					for (int k = 0; k < figures.size(); k++) {
+						figures[k].draw();
+					}
 
+					ofSetColor(255, 255, 255, 255);
+					glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA); // set blending mode
+					this->skeletonFBO.draw(0, 0, ofGetWidth(), ofGetHeight());
+				}
 				ofEnableAlphaBlending();
 				ofSetColor(255, 255, 255, 255);
+
+				
 
 				if (displayBackButton) {
 					if (backButton.event)backButton.bounds.setSize(backButton.size.x*1.05, backButton.size.y*1.05);
@@ -1439,7 +1566,7 @@ void ofApp::draw() {
 
 				for (int k = 0; k < figures.size(); k++) {
 					figures[k].draw();
-				}
+				} 
 
 				ofSetColor(255, 255, 255, 255);
 				glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA); // set blending mode
@@ -1457,7 +1584,7 @@ void ofApp::draw() {
 				glTranslatef(ofGetWidth() / 2, 50, 0);
 				glScalef((gui->flipText) ? -1.0f : 1.0f, 1.0f, 1.0f);
 
-				text.draw(displayText + ofToString(infectionScore), 0, 0, textAlignFlag);
+			text.draw(displayText + ofToString(infectionScore), 0, 0, textAlignFlag);
 
 				glPopMatrix();
 
@@ -1478,6 +1605,14 @@ void ofApp::draw() {
 			text.draw(displayText, 0, 0, textAlignFlag);
 
 			glPopMatrix();
+
+				if (playAgainButton.event)playAgainButton.bounds.setSize(playAgainButton.size.x*1.05, playAgainButton.size.y*1.05);
+				else {
+					playAgainButton.bounds.setSize(playAgainButton.size.x, playAgainButton.size.y);
+				}
+				playAgainButton.image.draw(playAgainButton.bounds);
+			
+
 			break;
 		}
 		}
@@ -1613,15 +1748,24 @@ void ofApp::SaveData() {
 
 }
 
+
 void ofApp::pointsOnCirleFromLine(ofPoint p1, ofPoint p2, float r, ofPoint& p3, ofPoint& p4, ofPoint& p5, ofPoint& p6) {
 
-	ofVec2f v = p2 - p1;
-	v.normalize().perpendicular().scale(r);
+	// calculate the direction between joint1 and joint2. 
+	ofVec2f dir = p2 - p1;
+	
+	// set the direction vector length to 1. 
+	dir.normalize();
+	// find a perpendicular line
+	dir.perpendicular();
+	// set the length to the radius. 
+	dir.scale(r);
 
-	p3 = p1 - v;
-	p4 = p1 + v;
-	p5 = p2 + v;
-	p6 = p2 - v;
+	// calculate the 4 points which make up the rectangle of the limb. 
+	p3 = p1 - dir;
+	p4 = p1 + dir;
+	p5 = p2 + dir;
+	p6 = p2 - dir;
 }
 
 void ofApp::drawHuman(int fig_color, bool showCursor) {
@@ -1827,6 +1971,9 @@ void ofApp::drawHuman(int fig_color, bool showCursor) {
 				ofPath limb05;
 				ofPoint p17, p18, p19, p20;
 
+				// body.joints[JointType_KneeLeft].getTrackingState() == TrackingState_Inferred || TrackingState_NotTracked
+
+			
 				pointsOnCirleFromLine(hipLeft, body.joints[JointType_KneeLeft].getPosition(), radiusJoint, p17, p18, p19, p20);
 
 				limb05.moveTo(p17);
@@ -1894,16 +2041,6 @@ void ofApp::drawHuman(int fig_color, bool showCursor) {
 				ofDrawCircle(body.joints[JointType_AnkleLeft].getPosition(), radiusJoint);
 				ofDrawCircle(body.joints[JointType_AnkleRight].getPosition(), radiusJoint);
 				ofPopStyle();
-
-
-				if (showCursor) {
-					ofPushStyle();
-					ofSetColor(255);
-
-					leftHand.cursor.draw(body.joints[JointType_HandTipLeft].getPosition());
-					rightHand.cursor.draw(body.joints[JointType_HandTipRight].getPosition());
-					ofPopStyle();
-				}
 
 			}
 		}

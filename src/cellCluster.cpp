@@ -36,8 +36,8 @@ void cellCluster::update() {
 			cluster[i].distanceY = distanceY;
 			cluster[i].uniformPhase = uniformPhase;
 			cluster[i].uniformRotation = uniformRotation;
-			cluster[i].bounds1 = bounds1;
-			cluster[i].bounds2 = bounds2;
+			cluster[i].p1 = bounds1;
+			cluster[i].p2 = bounds2;
 			cluster[i].isTargeted = (kinectTracking) ? ((cluster[i].circleIntersect(handL, detectionRange) && handStateL == 3) || (cluster[i].circleIntersect(handR, detectionRange) && handStateR == 3)) :
 				(cluster[i].circleIntersect(ofVec2f(ofGetMouseX(), ofGetMouseY()), detectionRange));
 
@@ -71,12 +71,12 @@ void cellCluster::addCell(ofVec2f pos) {
 	c.maxWaxWane = maxWaxWane;
 	c.uniformPhase = uniformPhase;
 	c.uniformRotation = uniformRotation;
-	c.bounds1 = ofVec2f(ofRandomWidth(), ofRandomHeight());
-	c.bounds2 = ofVec2f(ofRandomWidth(), ofRandomHeight());
+	c.p1 = ofVec2f(ofRandomWidth(), ofRandomHeight());
+	c.p2 = ofVec2f(ofRandomWidth(), ofRandomHeight());
 	c.pos = pos;
 
-	c.d1 = c.pos - c.bounds1;
-	c.d2 = c.pos - c.bounds2;
+	c.d1 = c.pos - c.p1;
+	c.d2 = c.pos - c.p2;
 
 	c.d1.normalize();
 	c.d2.normalize();
@@ -97,8 +97,8 @@ void cellCluster::addCell() {
 	c.minWaxWane = minWaxWane;
 	c.maxWaxWane = maxWaxWane;
 	c.uniformPhase = uniformPhase;
-	c.bounds1 = ofVec2f(ofRandomWidth(), ofRandomHeight());
-	c.bounds2 = ofVec2f(ofRandomWidth(), ofRandomHeight());
+	c.p1 = ofVec2f(ofRandomWidth(), ofRandomHeight());
+	c.p2 = ofVec2f(ofRandomWidth(), ofRandomHeight());
 	c.pos = ofVec2f(ofRandomWidth(), ofRandomHeight());
 
 	float r = ofRandom((bounds1.distance(bounds2) / 2)); // random distance from the midpoint of the two points. [0-radius]
@@ -106,8 +106,8 @@ void cellCluster::addCell() {
 	ofVec2f mid = (bounds1 + bounds2) / 2; // find midpoint
 	float x = (cos(angle)*r) + mid.x;
 	float y = (sin(angle)*r) + mid.y;
-	c.d1 = c.pos - c.bounds1;
-	c.d2 = c.pos - c.bounds2;
+	c.d1 = c.pos - c.p1;
+	c.d2 = c.pos - c.p2;
 
 	c.d1.normalize();
 	c.d2.normalize();
@@ -128,8 +128,8 @@ void cellCluster::addCell(ofVec2f p1, ofVec2f p2) {
 	c.minWaxWane = minWaxWane;
 	c.maxWaxWane = maxWaxWane;
 	c.uniformPhase = uniformPhase;
-	c.bounds1 = p1;
-	c.bounds2 = p2;
+	c.p1 = p1;
+	c.p2 = p2;
 
 	float r = ofRandom(p1.distance(p2) / 2); // random distance from the midpoint of the two points. [0-r]
 	float angle = ofRandomf()*PI * 2; // random angle
@@ -137,8 +137,8 @@ void cellCluster::addCell(ofVec2f p1, ofVec2f p2) {
 	float x = (cos(angle)*r) + mid.x;
 	float y = (sin(angle)*r) + mid.y;
 	c.pos = ofVec2f(x, y);
-	c.d1 = c.pos - c.bounds1;
-	c.d2 = c.pos - c.bounds2;
+	c.d1 = c.pos - c.p1;
+	c.d2 = c.pos - c.p2;
 
 	c.d1.normalize();
 	c.d2.normalize();
@@ -159,12 +159,12 @@ void cellCluster::addCell(ofVec2f bound1, ofVec2f bounds2, ofVec2f spawnPoint) {
 	c.minWaxWane = minWaxWane;
 	c.maxWaxWane = maxWaxWane;
 	c.uniformPhase = uniformPhase;
-	c.bounds1 = bounds1;
-	c.bounds2 = bounds2;
+	c.p1 = bounds1;
+	c.p2 = bounds2;
 
 	c.pos = spawnPoint;
-	c.d1 = c.pos - c.bounds1;
-	c.d2 = c.pos - c.bounds2;
+	c.d1 = c.pos - c.p1;
+	c.d2 = c.pos - c.p2;
 
 	c.d1.normalize();
 	c.d2.normalize();
