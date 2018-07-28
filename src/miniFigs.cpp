@@ -6,7 +6,15 @@
 #define FIG_INFECTED_WIDTH 82
 #define FIG_INFECTED_HEIGHT 82
 
+
+#define CARD_FULL_WIDTH 576
+#define CARD_FULL_HEIGHT 688
+
+#define CARD_THUMB_WIDTH 61
+#define CARD_THUMB_HEIGHT 85
+
 vector<ofImage> miniFig:: initFigures;
+vector<ofImage> miniFig:: cardFigures;
 vector<ofImage> miniFig::happyAnim;
 vector<ofImage> miniFig:: sickAnim;
 vector<ofImage> miniFig::happyAnimF;
@@ -20,7 +28,7 @@ int miniFig::DeathScore = 0;
 float miniFig::countrySeverityRate = 80.0;
 miniFig::miniFig() {
 	offset = ofRandomuf(); // that each figure does not walk the same
-	Velocity = ofVec2f(ofRandom(-1.25, 1.25), ofRandom(-1.25,1.25));
+	Velocity = ofVec2f(ofRandom(-1, 1), ofRandom(-1,1));
 	hasEveryBeenInfected = false; 
 	lifeTime = 0;
 }
@@ -31,7 +39,7 @@ void miniFig::setup(ofVec2f loc,int index) {
 	offset = ofRandomuf(); // that each figure does not walk the same
 	Velocity = ofVec2f(ofRandom(-1,1), ofRandom(-1,1));
 
-
+	id = index; 
 	// setup display images
 	if (initFigures.size()) {
 		displayImage = &(initFigures[index%initFigures.size()]); // select image from start of array
@@ -45,6 +53,20 @@ void miniFig::setup(ofVec2f loc,int index) {
 
 	lifeTime = 0;
 	checkHealth = false; 
+
+}
+
+void miniFig::setup(ofVec2f loc, int index,miniFig::STATE state) {
+	offset = ofRandomuf(); // that each figure does not walk the same
+	Velocity = ofVec2f(ofRandom(-1, 1), ofRandom(-1, 1));
+
+	id = index;
+	
+	boundingBox.setFromCenter(loc, FIG_WIDTH, FIG_HEIGHT);
+	currentState = state; 
+	animate();
+	lifeTime = 0;
+	checkHealth = false;
 
 }
 void miniFig::update() {
@@ -129,6 +151,17 @@ void miniFig :: animate() {
 		else displayImage = &(vaccine_walking[frameNum]); // healthy
 		break; 
 	}
+	case CARD_THUMB: {
+		boundingBox.setSize(CARD_THUMB_WIDTH, CARD_THUMB_HEIGHT);
+		displayImage = &(cardFigures[id%cardFigures.size()]);
+		break;
+	}
+	case START:{
+		boundingBox.setSize(FIG_WIDTH,FIG_HEIGHT);
+		displayImage = &(initFigures[id%initFigures.size()]);
+		break;
+	}
+
 	}
 	// dead
 }
@@ -202,7 +235,15 @@ void miniFig::changeState(STATE s) {
 	if (s == SICK && currentState != SICK) {
 		Velocity *= 0.25;
 	}
-	
+
+	if (s == CARD_THUMB) {
+		currentState == CARD_THUMB;
+		return;
+	}
+
+	if (currentState == CARD_THUMB) {
+		return; 
+	}
 	if (currentState == DEAD) {
 		return;
 	}
@@ -218,6 +259,9 @@ void miniFig::changeState(STATE s) {
 	if (currentState == VACCINE_WAVE) {
 		return;
 	}
+
+
+
 
 		currentState = s;
 	

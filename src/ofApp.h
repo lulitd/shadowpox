@@ -166,7 +166,9 @@ private:
 		ofPoint size;
 		bool event = true; 
 		float timeStamp;
-	} vaccineButton, virusButton, backButton,backButtonAlt,skipButton,playAgainButton;
+	} vaccineButton, virusButton, backButton,backButtonAlt,skipButton,newGameButton,forwardButton,backwardButton;
+
+	ofImage* selectedCardImage;
 
 	int choiceSeqVaccine = -1;
 
@@ -184,7 +186,9 @@ private:
 	bool displayDemoVid = false; 
 
 	int textAlignmentX = 0; 
+	int selectedCard = 0; 
 	// Default code to pass into poxemon code function.
 	char code[4] = "???";
+
 };
 	

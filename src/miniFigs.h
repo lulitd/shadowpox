@@ -6,7 +6,19 @@ class miniFig {
 public:
 	miniFig();
 	~miniFig();
+	enum STATE {
+		START,
+		HAPPY,
+		SICK,
+		DEAD,
+		VACCINE_WAVE,
+		VACCINE_WALK,
+		CARD_FULL,
+		CARD_THUMB,
+	};
+
 	void setup(ofVec2f loc, int index);
+	void setup(ofVec2f loc, int index, miniFig::STATE state);
 	void update();
 	void getInfected(ofVec2f&,int&, bool);
 	void draw();
@@ -15,14 +27,7 @@ public:
 
 	ofVec2f Velocity; 
 
-	enum STATE {
-		START,
-		HAPPY,
-		SICK,
-		DEAD,
-		VACCINE_WAVE,
-		VACCINE_WALK,
-	};
+
 	void changeState(STATE s);
 
 	static void loadImage(string filename, STATE imgType,bool flipped) {
@@ -32,6 +37,9 @@ public:
 		{
 		case START:
 			initFigures.push_back(img);
+			break;
+		case CARD_FULL:
+			cardFigures.push_back(img);
 			break;
 		case HAPPY:
 			if (!flipped) happyAnim.push_back(img);
@@ -61,6 +69,8 @@ public:
 	static int getDeathScore() {
 		return DeathScore; 
 	}
+
+	static vector<ofImage> cardFigures;
 	
 protected:
 	ofImage* displayImage; 
@@ -91,5 +101,6 @@ private:
 	int sequenceFPS = 25;
 	int offsetFrame = 0;
 	static int DeathScore;
+	int id; 
 	
 };

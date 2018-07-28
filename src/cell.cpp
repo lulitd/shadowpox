@@ -24,7 +24,7 @@ void cell::setup() {
 	if (horns.size()) {
 		int i = (int)(ofRandom(0, horns.size()/2));
 		hornLeft = &(horns[i]);
-		int j = (int)(ofRandom(horns.size() / 2+1, horns.size() ));
+		int j = (int)(ofRandom(horns.size()/2+1, horns.size() ));
 		hornRight = &(horns[j]);
 	}
 	else  printf("Failed to set horns. Empty list");

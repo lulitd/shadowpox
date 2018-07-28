@@ -9,11 +9,6 @@
 #define FIGURE_COLOR 255
 #define FIGURE_COLOR_TRANSITION 200
 
-
-//TODO: ADD SKIP BUTTON
-//TODO: KINECT SELECTION
-
-
 //--------------------------------------------------------------
 void ofApp::setup() {
 	text.load("font/euro.ttf", 55, true, true, false, false, 72);
@@ -37,7 +32,7 @@ void ofApp::setup() {
 	filein >> this->projector;
 	filein.close();
 
-	// todo move all image loading to new thread!
+	// TODO: move all image loading to new thread! 
 	// loading in all the svgs
 	// read the directory for the images we know that they are named in seq
 	ofDirectory dir;
@@ -168,6 +163,18 @@ void ofApp::setup() {
 	}
 	else ofLogWarning("shadowpox", "Could not find folder:anim/vaccine_waving");
 
+	nFiles = dir.listDir("anim/cards");
+	ofLogNotice("shadowpox") << "cards figures " << nFiles << " images";
+	if (nFiles) {
+		for (int i = 0; i < dir.numFiles(); i++) {
+			// get file paths to load into cells
+			string filePath = dir.getPath(i);
+			miniFig::loadImage(filePath, miniFig::CARD_FULL, false);
+		}
+	}
+	else ofLogWarning("shadowpox", "Could not find folder:anim/cards");
+
+
 	worldMap.load("choices/world-map_flipped.png");
 
 	nFiles = dir.listDir("choices/map_bounds/flipped");
@@ -270,10 +277,17 @@ void ofApp::setup() {
 		skipButton.bounds.setFromCenter(0, 0, skipButton.image.getWidth(), skipButton.image.getHeight());
 		skipButton.size = ofPoint(skipButton.image.getWidth(), skipButton.image.getHeight());
 
+		forwardButton.image.load(dir.getPath(3));
+		forwardButton.bounds.setFromCenter(0, 0, forwardButton.image.getWidth(), forwardButton.image.getHeight());
+		forwardButton.size = ofPoint(forwardButton.image.getWidth(), forwardButton.image.getHeight());
 
-		playAgainButton.image.load(dir.getPath(3));
-		playAgainButton.bounds.setFromCenter(0, 0, playAgainButton.image.getWidth(), playAgainButton.image.getHeight());
-		playAgainButton.size = ofPoint(playAgainButton.image.getWidth(), playAgainButton.image.getHeight());
+		backwardButton.image.load(dir.getPath(4));
+		backwardButton.bounds.setFromCenter(0, 0, backwardButton.image.getWidth(), backwardButton.image.getHeight());
+		backwardButton.size = ofPoint(backwardButton.image.getWidth(), backwardButton.image.getHeight());
+
+		newGameButton.image.load(dir.getPath(5));
+		newGameButton.bounds.setFromCenter(0, 0, newGameButton.image.getWidth(), newGameButton.image.getHeight());
+		newGameButton.size = ofPoint(newGameButton.image.getWidth(), newGameButton.image.getHeight());
 	}
 	else ofLogWarning("shadowpox", "Could not find folder:choices/buttons");
 
@@ -375,7 +389,7 @@ void ofApp::setup() {
 	regionCenter[9] = ofPoint(1486,426);// north america
 	regionCenter[10] = ofPoint(988,396);// western europe
 
-
+	#pragma region CSV SETUP
 	/* Columns
 	0.Region Code int
 	1.Country Number  int
@@ -413,6 +427,7 @@ void ofApp::setup() {
 
 	// time // country // choice // score
 	logData.addRow(header);
+	#pragma endregion
 
 
 	currentState = sequenceMode::SCREENSAVER;
@@ -439,11 +454,9 @@ void ofApp::update() {
 		backButtonAlt.bounds.setPosition(ofGetWidth() - (backButtonAlt.size.x * 2), ofGetHeight() - backButtonAlt.size.y - 15);
 
 		skipButton.bounds.setPosition(0, ofGetHeight() - skipButton.size.y);
-		playAgainButton.bounds.setPosition(0, ofGetHeight() - playAgainButton.size.y);
+		
 	}
 	this->kinect.update();
-
-	//if (gui->openingSeq) currentState = sequenceMode::COUNTRYCHOICE;
 
 	if (!gui->manualSelection && currentState != sequenceMode::GAMEPLAY) {
 
@@ -1183,6 +1196,7 @@ void ofApp::update() {
 				currentState = sequenceMode::END;
 				endDialog = 0;
 				transitionTimer = now;
+				selectedCardImage = &miniFig::cardFigures[0];
 
 			}
 			break;
@@ -1210,36 +1224,44 @@ void ofApp::update() {
 					endDialog = 2;
 					transitionTimer = now;
 				}
+
+
+				int minFigDisplayWidth = ((infectionScore / 10) + 1) * 100;
+				int center = minFigDisplayWidth + ((ofGetWidth() - minFigDisplayWidth) / 2);
+
+				newGameButton.bounds.setPosition(center-newGameButton.size.x-300, ofGetHeight() / 2 - forwardButton.size.y / 2 + newGameButton.size.y+50);
+
+				forwardButton.bounds.setPosition(center - forwardButton.size.x-300, ofGetHeight() / 2 - forwardButton.size.y / 2);
+				backwardButton.bounds.setPosition(center+ backwardButton.size.x+100, ofGetHeight() / 2 - backwardButton.size.y / 2);
 				break;
 			}
 			case 2: {
-				/*if (!scoreCalculated) {
-					modInfectionScore = infectionScore % 99;
-					int div = infectionScore / 99;
-					div = ofClamp(div, 1, 10);
-				if (infectionScore < 100)modInfectionScore = infectionScore;
-				else if (modInfectionScore < 25)modInfectionScore += (rand() % (10 + div));
-				else if (modInfectionScore > 85)modInfectionScore -= (rand() % (20 - div));
-					scoreCalculated = true;
-				}*/
 
 				poxencode(isVaccine, infectionScore, miniFig::getDeathScore(), code);
 
-				displayText = "Your web code is:\n \n";
+				figures.clear();
+				
+				for (int i = 0; i < infectionScore; i++) {
+					miniFig fig;
+					fig.setup(leftLocations[i], i,miniFig::CARD_THUMB);
+					figures.push_back(fig);
+				}
 
+				displayText = "Your code is: ";
 				displayText += code;
 
-				displayText += "\n \n Write your code in the blank on the card, and visit \n \n";
+				displayText += "\n To see your ";
+				displayText += (isVaccine) ? "Protection " : "Infection ";
+				displayText += "Collection online visit:\n";
 				displayText += "shadowpox.org /";
 				displayText += code;
-				displayText += "\n \n to meet the people in your \n";
-				displayText += (isVaccine) ? "Protection " : "Infection ";
-				displayText += "Collection.";
 
+				selectedCardImage = &miniFig::cardFigures[selectedCard % miniFig::cardFigures.size()];
+				
 				// play again button
 
 				if (gui->manualSelection) {
-					if (playAgainButton.bounds.inside(mouseX, mouseY) && ofGetMousePressed()) {
+					if (newGameButton.bounds.inside(mouseX, mouseY) && ofGetMousePressed()) {
 						currentState = sequenceMode::COUNTRYCHOICE;
 						selectedCountry = nullptr;
 						selectedRegion = nullptr;
@@ -1260,17 +1282,52 @@ void ofApp::update() {
 				}
 				else {
 
-					if (playAgainButton.bounds.inside(rightHand.pos)) {
-						playAgainButton.event = true;
-						if (playAgainButton.timeStamp == 0)
-							playAgainButton.timeStamp = now;
+					if (newGameButton.bounds.inside(rightHand.pos)) {
+						newGameButton.event = true;
+						if (newGameButton.timeStamp == 0)
+							newGameButton.timeStamp = now;
 					}
 					else {
-						playAgainButton.event = false;
-						playAgainButton.timeStamp = 0;
+						newGameButton.event = false;
+						newGameButton.timeStamp = 0;
 					}
 
-					if (playAgainButton.event && now - playAgainButton.timeStamp > 2) {
+
+					if (forwardButton.bounds.inside(rightHand.pos)) {
+						forwardButton.event = true;
+						if (forwardButton.timeStamp == 0)
+							forwardButton.timeStamp = now;
+					}
+					else {
+						forwardButton.event = false;
+						forwardButton.timeStamp = 0;
+					}
+
+					if (backwardButton.bounds.inside(rightHand.pos)) {
+						backwardButton.event = true;
+						if (backwardButton.timeStamp == 0)
+							backwardButton.timeStamp = now;
+					}
+					else {
+						backwardButton.event = false;
+						backwardButton.timeStamp = 0;
+					}
+
+					if (forwardButton.event && now - forwardButton.timeStamp > 0.75) {
+						selectedCard = (selectedCard + 1) % infectionScore; 
+						forwardButton.timeStamp = now; 
+
+					
+					}
+
+					if (backwardButton.event && now - backwardButton.timeStamp > 0.75) {
+						selectedCard = (selectedCard - 1) % infectionScore;
+						backwardButton.timeStamp = now;
+					
+					}
+
+
+					if (newGameButton.event && now - newGameButton.timeStamp > 2) {
 						currentState = sequenceMode::COUNTRYCHOICE;
 						selectedCountry = nullptr;
 						selectedRegion = nullptr;
@@ -1291,13 +1348,7 @@ void ofApp::update() {
 
 				}
 
-
-				if (now - transitionTimer > 60) {
-					endDialog = 3;
-					transitionTimer = now;
-				}
-
-				if (numOfBodiesTracked == 0) {
+				if (numOfBodiesTracked == 0 && now-transitionTimer>60) {
 					endDialog = 3;
 					transitionTimer = now;
 				}
@@ -1592,26 +1643,64 @@ void ofApp::draw() {
 			break;
 		}
 		case sequenceMode::END: {
+			if (endDialog < 2) {
+				textAlignFlag = 0;
+				textAlignFlag |= ofxTextAlign::HORIZONTAL_ALIGN_CENTER;
+				textAlignFlag |= ofxTextAlign::VERTICAL_ALIGN_MIDDLE;
 
-			textAlignFlag = 0;
-			textAlignFlag |= ofxTextAlign::HORIZONTAL_ALIGN_CENTER;
-			textAlignFlag |= ofxTextAlign::VERTICAL_ALIGN_MIDDLE;
 
+				glPushMatrix();
+				glTranslatef(ofGetWidth() / 2, ofGetHeight() / 2, 0);
+				glScalef((gui->flipText) ? -1.0f : 1.0f, 1.0f, 1.0f);
 
-			glPushMatrix();
-			glTranslatef(ofGetWidth() / 2, ofGetHeight() / 2, 0);
-			glScalef((gui->flipText) ? -1.0f : 1.0f, 1.0f, 1.0f);
+				text.draw(displayText, 0, 0, textAlignFlag);
+				glPopMatrix();
+			}
+			if (endDialog == 2) {
+				textAlignFlag = 0;
+				textAlignFlag |= ofxTextAlign::HORIZONTAL_ALIGN_CENTER;
+				textAlignFlag |= ofxTextAlign::VERTICAL_ALIGN_TOP;
 
-			text.draw(displayText, 0, 0, textAlignFlag);
+				glPushMatrix();
+				int minFigDisplayWidth = ((infectionScore / 10) + 1) * 100;
+				glTranslatef(minFigDisplayWidth + ((ofGetWidth() - minFigDisplayWidth) / 2), 0, 0);
+				glScalef((gui->flipText) ? -1.0f : 1.0f, 1.0f, 1.0f);
 
-			glPopMatrix();
+				text.draw(displayText, 0, 0, textAlignFlag);
+				glPopMatrix();
 
-				if (playAgainButton.event)playAgainButton.bounds.setSize(playAgainButton.size.x*1.05, playAgainButton.size.y*1.05);
-				else {
-					playAgainButton.bounds.setSize(playAgainButton.size.x, playAgainButton.size.y);
+				rightHand.cursor.draw(rightHand.pos);
+
+				for (int k = 0; k < figures.size(); k++) {
+
+					if (k > figures.size() - miniFig::getDeathScore()) { ofSetColor(125); }
+					else { ofSetColor(255); }
+					figures[k].draw();
 				}
-				playAgainButton.image.draw(playAgainButton.bounds);
+
+				ofSetColor(255);
+				 
 			
+				selectedCardImage->draw(minFigDisplayWidth+(ofGetWidth() - minFigDisplayWidth)/2-(613/2), (ofGetHeight() - 860) / 2,613,860);
+
+				if (backwardButton.event) { backwardButton.bounds.setSize(backwardButton.size.x*1.05, backwardButton.size.y*1.05); }
+				else {
+					backwardButton.bounds.setSize(backwardButton.size.x, backwardButton.size.y);
+				}
+				backwardButton.image.draw(backwardButton.bounds);
+
+				if (newGameButton.event) { newGameButton.bounds.setSize(newGameButton.size.x*1.05, newGameButton.size.y*1.05); }
+				else {
+					newGameButton.bounds.setSize(newGameButton.size.x, newGameButton.size.y);
+				}
+				newGameButton.image.draw(newGameButton.bounds);
+
+				if (forwardButton.event) { forwardButton.bounds.setSize(forwardButton.size.x*1.05, forwardButton.size.y*1.05); }
+				else {
+					forwardButton.bounds.setSize(forwardButton.size.x, forwardButton.size.y);
+				}
+				forwardButton.image.draw(forwardButton.bounds);
+			}
 
 			break;
 		}
@@ -1669,6 +1758,9 @@ void ofApp::keyReleased(int key) {
 
 		ofLogNotice("shadowpox") << "saving" << fileName;
 		break;
+	case GLFW_KEY_ESCAPE: {
+		ofExit();
+	}
 
 	}
 }
