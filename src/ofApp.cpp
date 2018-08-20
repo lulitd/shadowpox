@@ -169,7 +169,7 @@ void ofApp::setup() {
 		for (int i = 0; i < dir.numFiles(); i++) {
 			// get file paths to load into cells
 			string filePath = dir.getPath(i);
-			miniFig::loadImage(filePath, miniFig::CARD_FULL, false);
+			miniFig::loadImage(filePath, miniFig::CARD_FULL, true);
 		}
 	}
 	else ofLogWarning("shadowpox", "Could not find folder:anim/cards");
@@ -279,15 +279,15 @@ void ofApp::setup() {
 
 		forwardButton.image.load(dir.getPath(3));
 		forwardButton.bounds.setFromCenter(0, 0, forwardButton.image.getWidth(), forwardButton.image.getHeight());
-		forwardButton.size = ofPoint(forwardButton.image.getWidth(), forwardButton.image.getHeight());
+		forwardButton.size = ofPoint(forwardButton.image.getWidth()*0.9, forwardButton.image.getHeight()*0.9);
 
 		backwardButton.image.load(dir.getPath(4));
 		backwardButton.bounds.setFromCenter(0, 0, backwardButton.image.getWidth(), backwardButton.image.getHeight());
-		backwardButton.size = ofPoint(backwardButton.image.getWidth(), backwardButton.image.getHeight());
+		backwardButton.size = ofPoint(backwardButton.image.getWidth()*0.9, backwardButton.image.getHeight()*0.9);
 
 		newGameButton.image.load(dir.getPath(5));
 		newGameButton.bounds.setFromCenter(0, 0, newGameButton.image.getWidth(), newGameButton.image.getHeight());
-		newGameButton.size = ofPoint(newGameButton.image.getWidth(), newGameButton.image.getHeight());
+		newGameButton.size = ofPoint(newGameButton.image.getWidth()*0.9, newGameButton.image.getHeight()*0.9);
 	}
 	else ofLogWarning("shadowpox", "Could not find folder:choices/buttons");
 
@@ -364,7 +364,8 @@ void ofApp::setup() {
 
 	for (int columns = 0; columns < 4; columns++) {
 		for (int rows = 0; rows < 8; rows++) {
-			ofVec2f loc = ofVec2f((rows * widthWithPadding) + offsetX, (columns * heightWithPadding) + textOffsetHeight);
+			//ofVec2f loc = ofVec2f((rows * widthWithPadding) + offsetX, (columns * heightWithPadding) + textOffsetHeight); // L2R but R2L in mirrored
+			ofVec2f loc = ofVec2f(((8-rows) * widthWithPadding) + offsetX, (columns * heightWithPadding) + textOffsetHeight); // R2L but L2R in mirrored
 			flagLocations.push_back(loc);
 		}
 	}
@@ -433,6 +434,7 @@ void ofApp::setup() {
 	currentState = sequenceMode::SCREENSAVER;
 	displaySkipButton = true;
 
+
 }
 
 //--------------------------------------------------------------
@@ -451,7 +453,7 @@ void ofApp::update() {
 
 	if (ofGetFrameNum() == 30) {
 		backButton.bounds.setPosition(ofGetWidth() - backButton.size.x, ofGetHeight() - backButton.size.y);
-		backButtonAlt.bounds.setPosition(ofGetWidth() - (backButtonAlt.size.x * 2), ofGetHeight() - backButtonAlt.size.y - 15);
+		backButtonAlt.bounds.setPosition(ofGetWidth() - (backButtonAlt.size.x *1.25f), ofGetHeight() - backButtonAlt.size.y - 15);
 
 		skipButton.bounds.setPosition(0, ofGetHeight() - skipButton.size.y);
 		
@@ -485,6 +487,9 @@ void ofApp::update() {
 		}
 	}
 
+	if (numOfBodiesTracked > 0) {
+		lastBodyTrackTime = now; 
+	}
 	if (!(numOfBodiesTracked > 1 && (currentState == sequenceMode::COUNTRYCHOICE || currentState == sequenceMode::VACCINECHOICE))) {
 
 		switch (currentState) {
@@ -698,8 +703,8 @@ void ofApp::update() {
 
 							displayText = "Shadowpox vaccination rate in \n" + sourceData[(selectedCountry->index) + 1].getString(sourceCol::COUNTRY) + ": \n" + ofToString(f, 0) + "%";
 
-							vaccineButton.bounds.setPosition((100 + ((f / 10) + 1) * 100) - vaccineButton.size.x / 2, ofGetHeight() / 2 - vaccineButton.size.y / 2);
-							virusButton.bounds.setPosition(ofGetWidth() - vaccineButton.size.x / 2 - ((((100 - f) / 10) + 1) * 100), ofGetHeight() / 2 - vaccineButton.size.y / 2);
+							vaccineButton.bounds.setPosition((100 + ((f / 10) + 1) * 100) - vaccineButton.size.x / 2, ofGetHeight() / 2 + vaccineButton.size.y*0.15f);
+							virusButton.bounds.setPosition(ofGetWidth() - vaccineButton.size.x / 2 - ((((100 - f) / 10) + 1) * 100), ofGetHeight() / 2+ vaccineButton.size.y *0.15f);
 
 							textAlignmentX = (vaccineButton.bounds.getCenter().x + virusButton.bounds.getCenter().x) / 2;
 							return;
@@ -791,8 +796,8 @@ void ofApp::update() {
 								figureSetup(figureAmount, f);
 								displayText = "Shadowpox vaccination rate in \n" + sourceData[(selectedCountry->index) + 1].getString(sourceCol::COUNTRY) + ": \n" + ofToString(f, 0) + "%";
 
-								vaccineButton.bounds.setPosition((100 + ((f / 10) + 1) * 100) - vaccineButton.size.x / 2, ofGetHeight() / 2 - vaccineButton.size.y / 2);
-								virusButton.bounds.setPosition(ofGetWidth() - vaccineButton.size.x / 2 - ((((100 - f) / 10) + 1) * 100), ofGetHeight() / 2 - vaccineButton.size.y / 2);
+								vaccineButton.bounds.setPosition((100 + ((f / 10) + 1) * 100) - vaccineButton.size.x / 2, ofGetHeight() / 2 - vaccineButton.size.y*0.6);
+								virusButton.bounds.setPosition(ofGetWidth() - vaccineButton.size.x / 2 - ((((100 - f) / 10) + 1) * 100), ofGetHeight() / 2 - vaccineButton.size.y *0.6);
 
 								textAlignmentX = (vaccineButton.bounds.getCenter().x + virusButton.bounds.getCenter().x) / 2;
 								return;
@@ -1196,8 +1201,8 @@ void ofApp::update() {
 				currentState = sequenceMode::END;
 				endDialog = 0;
 				transitionTimer = now;
+			
 				selectedCardImage = &miniFig::cardFigures[0];
-
 			}
 			break;
 		}
@@ -1217,47 +1222,67 @@ void ofApp::update() {
 				endDialog = 1;
 			}
 			case 1: {
-				displayText = (isVaccine) ?
-					"Your Protection Score is " + ofToString(infectionScore, 0) + ".\n" + " \n" + "This is how many people you\n would have infected\n if you were not immunized. \n \n Of these, " + ofToString(miniFig::getDeathScore()) + " would have died." :
-					"Your Infection Score is " + ofToString(infectionScore, 0) + ".\n" + " \n" + "This is the number of \n people to whom \n you passed the virus. \n \n Of these, " + ofToString(miniFig::getDeathScore()) + " died.";
+
+				if (infectionScore == 0) {
+					displayText = (isVaccine) ?
+				   "Your Protection Score is 0.\n \n Nobody in your community \n was affected by your actions." : "Your Infection Score is 0.\n \n Nobody in your community \n was affected by your actions.";
+				}
+				else {
+					displayText = (isVaccine) ?
+						"Your Protection Score is " + ofToString(infectionScore, 0) + ".\n" + " \n" + "This is how many people you\n would have infected\n if you were not immunized. \n \n Of these, " + ofToString(miniFig::getDeathScore()) + " would have died." :
+						"Your Infection Score is " + ofToString(infectionScore, 0) + ".\n" + " \n" + "This is the number of \n people to whom \n you passed the virus. \n \n Of these, " + ofToString(miniFig::getDeathScore()) + " died.";
+				}
 				if (now - transitionTimer > 7) {
 					endDialog = 2;
 					transitionTimer = now;
+						poxencode(isVaccine, infectionScore, miniFig::getDeathScore(), code);
+
+						figures.clear();
+						miniFig::shuffleCards();
+						for (int i = 0; i < infectionScore; i++) {
+							miniFig fig;
+							fig.setup(leftLocations[i], i, miniFig::CARD_THUMB);
+							figures.push_back(fig);
+						}
+
+						selectedCard = abs(selectedCard) % infectionScore;
+
+						displayText = "Your code is: ";
+						displayText += code;
+
+						if (infectionScore > 0) {
+							displayText += "\n To see your ";
+							displayText += (isVaccine) ? "Protection " : "Infection ";
+							displayText += "Collection online visit\n";
+							displayText += "shadowpox.org /";
+							displayText += code;
+						}
+						else {
+							displayText += "\n Your ";
+							displayText += (isVaccine) ? "Protection " : "Infection ";
+							displayText += "Collection is empty.\n";
+							displayText += "shadowpox.org /";
+							displayText += code;
+						}
+
+						setupCardsDisplay = false;
 				}
 
 
-				int minFigDisplayWidth = ((infectionScore / 10) + 1) * 100;
+				int minFigDisplayWidth = ((infectionScore / 10)) * 100;
 				int center = minFigDisplayWidth + ((ofGetWidth() - minFigDisplayWidth) / 2);
 
-				newGameButton.bounds.setPosition(center-newGameButton.size.x-300, ofGetHeight() / 2 - forwardButton.size.y / 2 + newGameButton.size.y+50);
+				newGameButton.bounds.setPosition(center- 270 - (newGameButton.size.x*1.5), ofGetHeight()- newGameButton.size.y-25);
 
-				forwardButton.bounds.setPosition(center - forwardButton.size.x-300, ofGetHeight() / 2 - forwardButton.size.y / 2);
-				backwardButton.bounds.setPosition(center+ backwardButton.size.x+100, ofGetHeight() / 2 - backwardButton.size.y / 2);
+				forwardButton.bounds.setPosition(center -270-(forwardButton.size.x*1.5), ofGetHeight() / 2 - forwardButton.size.y / 2);
+				backwardButton.bounds.setPosition(center + 270 + (backwardButton.size.x*0.5), ofGetHeight() / 2 - backwardButton.size.y / 2);
 				break;
 			}
 			case 2: {
 
-				poxencode(isVaccine, infectionScore, miniFig::getDeathScore(), code);
 
-				figures.clear();
-				
-				for (int i = 0; i < infectionScore; i++) {
-					miniFig fig;
-					fig.setup(leftLocations[i], i,miniFig::CARD_THUMB);
-					figures.push_back(fig);
-				}
+				selectedCardImage = figures[selectedCard].displayImage; 
 
-				displayText = "Your code is: ";
-				displayText += code;
-
-				displayText += "\n To see your ";
-				displayText += (isVaccine) ? "Protection " : "Infection ";
-				displayText += "Collection online visit:\n";
-				displayText += "shadowpox.org /";
-				displayText += code;
-
-				selectedCardImage = &miniFig::cardFigures[selectedCard % miniFig::cardFigures.size()];
-				
 				// play again button
 
 				if (gui->manualSelection) {
@@ -1316,13 +1341,19 @@ void ofApp::update() {
 					if (forwardButton.event && now - forwardButton.timeStamp > 0.75) {
 						selectedCard = (selectedCard + 1) % infectionScore; 
 						forwardButton.timeStamp = now; 
+						shouldFlipCard = true; 
+						transitionTimer = now; 
 
 					
 					}
 
 					if (backwardButton.event && now - backwardButton.timeStamp > 0.75) {
 						selectedCard = (selectedCard - 1) % infectionScore;
+						shouldFlipCard = true;
 						backwardButton.timeStamp = now;
+
+						if (selectedCard < 0) selectedCard = infectionScore-1; 
+						transitionTimer = now; 
 					
 					}
 
@@ -1348,15 +1379,46 @@ void ofApp::update() {
 
 				}
 
-				if (numOfBodiesTracked == 0 && now-transitionTimer>60) {
+				if (numOfBodiesTracked == 0 && now-lastBodyTrackTime>5) {
 					endDialog = 3;
 					transitionTimer = now;
+					lastBodyTrackTime = now; 
 				}
 				break;
 
 			}
 			case 3: {
+				displayText = "Thank you for playing!\n ";
+				displayText += "Take a card and write down your code :\n";
+				displayText += code;
 
+				
+				if ((numOfBodiesTracked == 0 && now - lastBodyTrackTime>20)) {
+					endDialog = 4;
+					transitionTimer = now;
+				}
+
+				if (now-lastBodyTrackTime<5 && numOfBodiesTracked> 0) {
+					setupCardsDisplay = true;
+					selectedCountry = nullptr;
+					selectedRegion = nullptr;
+					isVaccine = false;
+					infectionScore = 0;
+					modInfectionScore = 0;
+					scoreCalculated = false;
+					// after a certain amount of time
+					currentState = sequenceMode::COUNTRYCHOICE; 
+					displaySkipButton = true;
+					miniFig::resetDeathScore();
+
+					textAlignFlag = 0;
+					textAlignFlag |= ofxTextAlign::HORIZONTAL_ALIGN_CENTER;
+					textAlignFlag |= ofxTextAlign::VERTICAL_ALIGN_TOP;
+				}
+				break;
+			}
+			case 4: {
+				setupCardsDisplay = true; 
 				selectedCountry = nullptr;
 				selectedRegion = nullptr;
 				isVaccine = false;
@@ -1594,7 +1656,6 @@ void ofApp::draw() {
 				}
 				else if (choiceSeqVaccine == 3) {
 
-
 					glPushMatrix();
 					glTranslatef(textAlignmentX, 50, 0);
 					glScalef((gui->flipText) ? -1.0f : 1.0f, 1.0f, 1.0f);
@@ -1602,7 +1663,6 @@ void ofApp::draw() {
 					glPopMatrix();
 
 				}
-
 
 				if (!gui->manualSelection && (displayBackButton || displaySkipButton)) {
 					rightHand.cursor.draw(rightHand.pos);
@@ -1656,32 +1716,35 @@ void ofApp::draw() {
 				text.draw(displayText, 0, 0, textAlignFlag);
 				glPopMatrix();
 			}
-			if (endDialog == 2) {
+			else if (endDialog == 2) {
 				textAlignFlag = 0;
 				textAlignFlag |= ofxTextAlign::HORIZONTAL_ALIGN_CENTER;
 				textAlignFlag |= ofxTextAlign::VERTICAL_ALIGN_TOP;
 
 				glPushMatrix();
-				int minFigDisplayWidth = ((infectionScore / 10) + 1) * 100;
-				glTranslatef(minFigDisplayWidth + ((ofGetWidth() - minFigDisplayWidth) / 2), 0, 0);
+				int minFigDisplayWidth = ((infectionScore / 10)) * 100;
+				glTranslatef(minFigDisplayWidth + ((ofGetWidth() - minFigDisplayWidth) / 2)-10,0, 0);
 				glScalef((gui->flipText) ? -1.0f : 1.0f, 1.0f, 1.0f);
 
 				text.draw(displayText, 0, 0, textAlignFlag);
 				glPopMatrix();
 
-				rightHand.cursor.draw(rightHand.pos);
-
+				int amountAlive = figures.size() - miniFig::getDeathScore();
 				for (int k = 0; k < figures.size(); k++) {
 
-					if (k > figures.size() - miniFig::getDeathScore()) { ofSetColor(125); }
+					if (k > amountAlive) { ofSetColor(125); }
 					else { ofSetColor(255); }
-					figures[k].draw();
+
+					figures[k].draw(k == selectedCard?1.15f:1.0f);
 				}
 
-				ofSetColor(255);
+
+				if (selectedCard > amountAlive) { ofSetColor(125); }
+				else { ofSetColor(255); }
 				 
-			
-				selectedCardImage->draw(minFigDisplayWidth+(ofGetWidth() - minFigDisplayWidth)/2-(613/2), (ofGetHeight() - 860) / 2,613,860);
+				selectedCardImage->draw(minFigDisplayWidth+(ofGetWidth() - minFigDisplayWidth)/2-(613/2)-10, (ofGetHeight() - 860) / 2+110,613,860);
+				
+				ofSetColor(255);
 
 				if (backwardButton.event) { backwardButton.bounds.setSize(backwardButton.size.x*1.05, backwardButton.size.y*1.05); }
 				else {
@@ -1700,8 +1763,20 @@ void ofApp::draw() {
 					forwardButton.bounds.setSize(forwardButton.size.x, forwardButton.size.y);
 				}
 				forwardButton.image.draw(forwardButton.bounds);
-			}
 
+				rightHand.cursor.draw(rightHand.pos);
+			}
+			else {
+				textAlignFlag = 0;
+				textAlignFlag |= ofxTextAlign::HORIZONTAL_ALIGN_CENTER;
+				textAlignFlag |= ofxTextAlign::VERTICAL_ALIGN_MIDDLE;
+
+				glPushMatrix();
+				glTranslatef(ofGetWidth() / 2, ofGetHeight() / 2, 0);
+				glScalef((gui->flipText) ? -1.0f : 1.0f, 1.0f, 1.0f);
+				text.draw(displayText, 0, 0, textAlignFlag);;
+				glPopMatrix();
+			}
 			break;
 		}
 		}

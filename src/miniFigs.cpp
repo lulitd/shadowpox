@@ -221,13 +221,14 @@ void miniFig::getInfected(ofVec2f& point, int &score, bool isVaccine) {
 				offsetFrame = (int)vaccine_walking.size() * offset;
 			}
 		}
-
-	
 	}
 }
 
-void miniFig::draw() {
-		displayImage->draw(boundingBox);
+void miniFig::draw(float scale) {
+
+	float offsetX = (boundingBox.width*scale - boundingBox.width)*0.5F;
+	float offsetY = (boundingBox.height*scale - boundingBox.height)*0.5F;
+	displayImage->draw(boundingBox.position.x-offsetX, boundingBox.position.y- offsetY, boundingBox.width*scale, boundingBox.height*scale);
 }
 
 

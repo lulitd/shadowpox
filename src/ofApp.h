@@ -183,12 +183,15 @@ private:
 	bool scoreCalculated = false; 
 	bool prevFlipTextStatus = false;
 	int numOfBodiesTracked = 0; 
+	float lastBodyTrackTime = 0; 
 	bool displayDemoVid = false; 
 
 	int textAlignmentX = 0; 
 	int selectedCard = 0; 
 	// Default code to pass into poxemon code function.
 	char code[4] = "???";
+	bool shouldFlipCard = true; 
+	bool setupCardsDisplay = true; 
 
 };
 	

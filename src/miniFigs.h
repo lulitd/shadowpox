@@ -1,6 +1,9 @@
 #pragma once
 #include "ofMain.h"
 #include "ofxSvg.h"
+#include <algorithm>
+#include <random>
+#include <chrono>      
 
 class miniFig {
 public:
@@ -21,8 +24,8 @@ public:
 	void setup(ofVec2f loc, int index, miniFig::STATE state);
 	void update();
 	void getInfected(ofVec2f&,int&, bool);
-	void draw();
-
+	void draw(float scale=1.0);
+	
 	static float countrySeverityRate;
 
 	ofVec2f Velocity; 
@@ -39,6 +42,7 @@ public:
 			initFigures.push_back(img);
 			break;
 		case CARD_FULL:
+			if (flipped) img.mirror(false, true);
 			cardFigures.push_back(img);
 			break;
 		case HAPPY:
@@ -69,11 +73,14 @@ public:
 	static int getDeathScore() {
 		return DeathScore; 
 	}
+	static void shuffleCards() {
+		unsigned seed = chrono::system_clock::now().time_since_epoch().count();
 
+		shuffle(begin(cardFigures), end(cardFigures), default_random_engine(seed));
+	}
 	static vector<ofImage> cardFigures;
-	
+	ofImage* displayImage;
 protected:
-	ofImage* displayImage; 
 	static vector<ofImage> initFigures;
 	static vector<ofImage> happyAnim; 
 	static vector<ofImage> happyAnimF;
@@ -102,5 +109,4 @@ private:
 	int offsetFrame = 0;
 	static int DeathScore;
 	int id; 
-	
 };
