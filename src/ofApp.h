@@ -158,7 +158,6 @@ private:
 		CURRENTSEVERITY,
 		CURRENTVACCINATIONRATE,
 	};
-
 	struct imageButton {
 		ofRectangle bounds;
 		ofImage image;

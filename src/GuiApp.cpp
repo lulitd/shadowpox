@@ -1,11 +1,12 @@
 #include "GuiApp.h"
 
-#define GUIWIDTH 300
+#define GUIWIDTH 550
 
 void GuiApp::setup(){
 	gui.setDefaultWidth(GUIWIDTH);
 
 	CVParam.setName("Game Parameters");
+
 	CVParam.add(manualSelection.set("Mouse Selection",true));
 	CVParam.add(sweeping.set("Hand Sweeping", true));
 	CVParam.add(handSensitivity.set("Hand Sensitivity", 15, 0, 100));
@@ -66,6 +67,8 @@ void GuiApp::setup(){
 	//gui.add(closingSeq.set("Closing animation", false));
 	//gui.add(fade.set("fade", false));
 	gui.add(spawn.set("Spawn Pox", true));
+
+	gui.add(dataLocation.setup("[Save]", "C:/Users/YORK/Google Drive/Shadowpox-game-data/"));
 	//gui.add(autoSelect.set("Auto Select Patients", true));
 	//gui.add(availablePatients.setup("Available Patients", "0"));
 

@@ -121,6 +121,9 @@
     <ClCompile Include="src\poxemon.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\addons\ofxInputField\src\ofxInputField.cpp">
+      <Filter>addons\ofxInputField\src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -254,6 +257,12 @@
     </Filter>
     <Filter Include="addons\ofxTextAlign\src">
       <UniqueIdentifier>{9A2B15DB-0A3F-2F62-AB38-204C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="addons\ofxInputField">
+      <UniqueIdentifier>{ee7f8a0e-70ac-48f4-acbd-3351aebcfae9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="addons\ofxInputField\src">
+      <UniqueIdentifier>{dc358491-7eee-47b9-8ee7-a6dcc34745a6}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -859,6 +868,9 @@
     </ClInclude>
     <ClInclude Include="src\poxemon.h">
       <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxInputField\src\ofxInputField.h">
+      <Filter>addons\ofxInputField\src</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

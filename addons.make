@@ -1,6 +1,7 @@
-ofxCsv
 ofxGui
 ofxOpenCv
-ofxRay
 ofxSvg
+ofxCsv
+ofxInputField
+ofxRay
 ofxTextAlign

@@ -2,6 +2,7 @@
 
 #include "ofMain.h"
 #include "ofxGui.h"
+#include "ofxInputField.h"
 
 class GuiApp: public ofBaseApp {
 
@@ -44,6 +45,8 @@ public:
 	ofParameter <bool>	skeleton;
 	ofParameter <int>   handSensitivity;
 	ofParameter <bool>  manualSelection; 
+	ofxTextField dataLocation; 
+	
 
 	ofxPanel gui;
 
