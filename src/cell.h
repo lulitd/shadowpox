@@ -13,6 +13,7 @@ public:
 	void update();
 	void draw();
 	bool circleIntersect(ofVec2f center, float r);
+	bool checkPointInsidePolygon(const vector<ofVec2f> &points, ofVec2f input);
 
 	enum imageType {
 		HORN,
@@ -68,6 +69,7 @@ public:
 	float targetTimer;
 	float poxHealth=3;// it takes 5 secs to kill a pox
 	ofVec2f force;
+	vector<ofVec2f>* bounds;
 
 
 

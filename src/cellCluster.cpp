@@ -14,6 +14,14 @@ void cellCluster::setup() {
 	handL = ofVec2f(-1000, -1000);
 	handR = ofVec2f(-1000, -1000);
 	cluster.reserve(maxCells);
+	boundsPoints.reserve(4);
+
+	for (size_t i = 0; i < 4; i++)
+	{
+		ofVec2f p = ofVec2f(-9999,9999);
+		boundsPoints.push_back(p);
+
+	}
 	addCellCluster(initCells);
 }
 
@@ -38,6 +46,7 @@ void cellCluster::update() {
 			cluster[i].uniformRotation = uniformRotation;
 			cluster[i].p1 = bounds1;
 			cluster[i].p2 = bounds2;
+			cluster[i].bounds = &boundsPoints;
 			cluster[i].isTargeted = (kinectTracking) ? ((cluster[i].circleIntersect(handL, detectionRange) && handStateL == 3) || (cluster[i].circleIntersect(handR, detectionRange) && handStateR == 3)) :
 				(cluster[i].circleIntersect(ofVec2f(ofGetMouseX(), ofGetMouseY()), detectionRange));
 

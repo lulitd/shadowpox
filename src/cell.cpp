@@ -81,24 +81,26 @@ void cell::update() {
 	}
 
 	if (isTargeted) {
-		// calculate the distance between the two joint points. 
-		//The Neck and the base of the spine.  
-		float distance = ofDist(p1.x, p1.y, p2.x, p2.y);
+		//// calculate the distance between the two joint points. 
+		////The Neck and the base of the spine.  
+		//float distance = ofDist(p1.x, p1.y, p2.x, p2.y);
 
-		// find the middle point between the two joint points.
-		ofVec2f middle = (p1 + p2) / 2; 
+		//// find the middle point between the two joint points.
+		//ofVec2f middle = (p1 + p2) / 2; 
 
-		//calculate the the pox's distance from the midPoint; 
-		float poxDistanceFromMid = 
-			(ofDist(middle.x, middle.y, pos.x, pos.y));
+		////calculate the the pox's distance from the midPoint; 
+		//float poxDistanceFromMid = 
+		//	(ofDist(middle.x, middle.y, pos.x, pos.y));
 
-		/*The pox is dying if:
-		*1.the pox is too far trom the middle point and
-		*2.the pox is lies outside two joints x position
-		   (with a 5% of the screen as buffer).
-		*/
-		isDying = (poxDistanceFromMid > distance) && 
-			(( (pos.x > max(p2.x, p1.x) + (ofGetWidth()*0.05) || pos.x < min(p2.x, p1.x) - (ofGetWidth()*0.05))));
+		///*The pox is dying if:
+		//*1.the pox is too far trom the middle point and
+		//*2.the pox is lies outside two joints x position
+		//   (with a 5% of the screen as buffer).
+		//*/
+		//isDying = (poxDistanceFromMid > distance) && 
+		//	(( (pos.x > max(p2.x, p1.x) + (ofGetWidth()*0.05) || pos.x < min(p2.x, p1.x) - (ofGetWidth()*0.05))));
+
+	isDying= ! checkPointInsidePolygon(*bounds,pos);
 	}
 	
 	// has the pox left the body
@@ -215,5 +217,17 @@ bool cell::circleIntersect(ofVec2f center, float r) {
 
 
 
+bool cell::checkPointInsidePolygon(const vector<ofVec2f> &points, ofVec2f input) {
 
+		int i, j;
+		bool c = false;
+		for (i = 0, j = points.size() - 1; i < points.size(); j = i++) {
+			if (((points[i].y>input.y) != (points[j].y>input.y)) &&
+				(input.x < (points[j].x - points[i].x) * (input.y - points[i].y) / (points[j].y - points[i].y) + points[i].x))
+				c = !c;
+		}
+		return c;
+	
+
+}
 

@@ -47,6 +47,7 @@ public:
 	ofVec2f handR;
 	ofVec2f prevhandL;
 	ofVec2f prevhandR;
+	vector<ofVec2f> boundsPoints; 
 	int handStateL;
 	int handStateR;
 

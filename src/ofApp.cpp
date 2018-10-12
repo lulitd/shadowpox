@@ -1377,7 +1377,7 @@ void ofApp::update() {
 					forwardButton.bounds.setPosition(center - 270 - (forwardButton.size.x*1.5), ofGetHeight() / 2 - forwardButton.size.y / 2);
 					backwardButton.bounds.setPosition(center + 270 + (backwardButton.size.x*0.5), ofGetHeight() / 2 - backwardButton.size.y / 2);
 
-					newGameButton.bounds.setPosition(ofGetWidth()*0.5f - 270 - (newGameButton.size.x*1.5), ofGetHeight() - newGameButton.size.y - 25);
+					newGameButton.bounds.setPosition(center - 360 - (newGameButton.size.x*1.5), ofGetHeight() - newGameButton.size.y - 25);
 				} 
 				break;
 			}
@@ -2175,6 +2175,8 @@ void ofApp::drawHuman(int fig_color, bool showCursor) {
 
 				//ofVec3f diff = body.joints[JointType_ShoulderLeft].getPosition() - body.joints[JointType_ShoulderRight].getPosition();
 				//float radiusJoint = diff.length()*0.165;
+				ofVec3f diff = body.joints[JointType_ShoulderLeft].getPosition() - body.joints[JointType_ShoulderRight].getPosition();
+				float radiusJoint = diff.length()*0.165;
 
 				for (auto bone : bonesDictionary) {
 					p1 = projector.getScreenCoordinateOfWorldPosition(body.joints[JointType_Neck].getPosition());
@@ -2182,6 +2184,15 @@ void ofApp::drawHuman(int fig_color, bool showCursor) {
 
 					patients[body.bodyId].bounds1 = p1;
 					patients[body.bodyId].bounds2 = p2;
+
+					ofVec3f jointA = body.joints[JointType_ShoulderLeft].getPosition();
+					ofVec3f jointB = body.joints[JointType_ShoulderRight].getPosition();
+					auto jointC = body.joints[JointType_HipLeft].getPosition().y;
+					auto jointD = body.joints[JointType_HipRight].getPosition().y;
+					patients[body.bodyId].boundsPoints[0] = projector.getScreenCoordinateOfWorldPosition(jointA);
+					patients[body.bodyId].boundsPoints[1] = projector.getScreenCoordinateOfWorldPosition(jointB);
+					patients[body.bodyId].boundsPoints[2] = projector.getScreenCoordinateOfWorldPosition(ofVec3f(jointA.x,jointC,jointA.z));
+					patients[body.bodyId].boundsPoints[3] = projector.getScreenCoordinateOfWorldPosition(ofVec3f(jointB.x, jointD, jointB.z));
 					if (gui->skeleton) {
 						ofDrawLine(body.joints[bone.first].getPosition(), body.joints[bone.second].getPosition());
 					}
@@ -2192,8 +2203,7 @@ void ofApp::drawHuman(int fig_color, bool showCursor) {
 				
 				ofPushStyle();
 
-				ofVec3f diff = body.joints[JointType_ShoulderLeft].getPosition() - body.joints[JointType_ShoulderRight].getPosition();
-				float radiusJoint = diff.length()*0.165;
+				
 
 				ofSetColor(fig_color);
 				ofDrawCircle(body.joints[JointType_Head].getPosition(), 110 * 0.001);
@@ -2298,7 +2308,6 @@ void ofApp::drawHuman(int fig_color, bool showCursor) {
 				ofPath limb05;
 				ofPoint p17, p18, p19, p20;
 
-				// body.joints[JointType_KneeLeft].getTrackingState() == TrackingState_Inferred || TrackingState_NotTracked
 
 			
 				pointsOnCirleFromLine(hipLeft, body.joints[JointType_KneeLeft].getPosition(), radiusJoint, p17, p18, p19, p20);

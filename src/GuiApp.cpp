@@ -1,6 +1,6 @@
 #include "GuiApp.h"
 
-#define GUIWIDTH 550
+
 
 void GuiApp::setup(){
 	gui.setDefaultWidth(GUIWIDTH);
