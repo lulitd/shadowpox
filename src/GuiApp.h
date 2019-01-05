@@ -3,7 +3,7 @@
 #include "ofMain.h"
 #include "ofxGui.h"
 #include "ofxInputField.h"
-#define GUIWIDTH 550
+#define GUIWIDTH 600
 class GuiApp: public ofBaseApp {
 
 public:

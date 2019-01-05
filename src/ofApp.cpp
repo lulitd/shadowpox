@@ -1330,7 +1330,7 @@ void ofApp::update() {
 						return;
 					}
 
-					if (now - transitionTimer > 7) {
+					if (now - transitionTimer > 5) {
 						endDialog = 4;
 						figures.clear();
 						transitionTimer = now;
@@ -1584,7 +1584,7 @@ void ofApp::draw() {
 		}
 		case sequenceMode::COUNTRYCHOICE:
 		{
-			if (numOfBodiesTracked > 1) {
+			if (numOfBodiesTracked > 2) {
 
 				glPushMatrix();
 				glTranslatef(ofGetScreenWidth() / 2, ofGetScreenHeight() / 2, 0);
@@ -1694,7 +1694,7 @@ void ofApp::draw() {
 			break;
 		}
 		case sequenceMode::VACCINECHOICE: {
-			if (numOfBodiesTracked > 1) {
+			if (numOfBodiesTracked > 2) {
 				glPushMatrix();
 				glTranslatef(ofGetScreenWidth() / 2, ofGetScreenHeight() / 2, 0);
 				glScalef((gui->flipText) ? -1.0f : 1.0f, 1.0f, 1.0f);
